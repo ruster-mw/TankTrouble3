@@ -1,0 +1,428 @@
+<?php 
+    ini_set('session.use_only_cookies', 1);
+    session_start();
+    if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true){
+    // echo "logged in as " . $_SESSION['username'];
+    } else {
+    // echo "not logged in";
+    }
+    $server = 'localhost';
+    $user = 'root';
+    $pass = '';
+    $baza = 'panzer_arger_accounts'; 
+
+    mysqli_report(MYSQLI_REPORT_OFF);
+    $db = @new mysqli($server, $user, $pass, $baza);
+
+    if ($db->connect_error){
+        die('blad polaczania z baza: '.$db->connect_error);
+    }
+    if(isset($_POST['request'])){
+        login($db);
+        header("Location: ".$_SERVER['PHP_SELF']); // Redirects to the same page
+        exit;
+    } else if(isset($_POST['logout'])){
+        session_unset();
+        session_destroy();
+        header("Location: ".$_SERVER['PHP_SELF']); 
+        exit;
+    }
+
+
+
+
+    function register($db){
+        $username = !empty($_POST['username']) ? htmlspecialchars(trim($_POST['username'])) : false;
+        $password = !empty($_POST['password']) ? password_hash(trim($_POST['password']), PASSWORD_DEFAULT) : false;
+        
+        if($username && $password) {
+            $check = $db->prepare("SELECT username FROM accounts WHERE username = ?");
+            $check->bind_param("s", $username);
+            $check->execute();
+            $check->store_result();
+
+            if($check->num_rows > 0){
+                return;
+            }
+       
+            $sql = "INSERT INTO `accounts`(`username`, `password`) VALUES (?, ?)";
+            $stmt = $db->prepare($sql);
+            $stmt->bind_param("ss", $username, $password);
+            $stmt->execute();
+    
+        }
+    }
+    function login($db){
+        $username = !empty($_POST['username']) ? htmlspecialchars(trim($_POST['username'])) : false;
+        $password = !empty($_POST['password']) ? trim($_POST['password']) : false;
+        $hashed_password = '';
+        if($username && $password){
+            $sql = "SELECT password FROM `accounts` WHERE username = ?";
+            $stmt = $db->prepare($sql);
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $stmt->bind_result($hashed_password);
+            if($stmt->fetch()){
+                if(password_verify($password, $hashed_password)){
+                    $_SESSION['logged_in'] = true;
+                    $_SESSION['username']  = $username;
+                } 
+            }
+
+        }
+    }
+ 
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panzer &Auml;rger</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/PanzerArger/assets/tank.ico">
+    <link rel="stylesheet" href="/PanzerArger/style.css?v=2?>" type="text/css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" type="text/css">
+</head>
+<body>
+    <div class="game-section hidden">
+        <div class="UI">
+            <div class="scoreboard"></div>
+             <button class="back-button">
+                   <p>Menu</p>
+            </button>
+        </div>
+
+        <canvas id="gameCanvas" width="600" height="400" tabindex="0"></canvas>
+       
+    </div>
+
+    <div class="keybinds-div">
+        <p>Press the desired key and press ENTER</p>
+        <input type="text" name="changekeybind" id="keybind-input" readonly="readonly" value="">
+        <button id="keybinds-close-button">
+             <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="overlay overlay-hidden">
+        <img src="./assets/howtoplay.svg" alt="how to play">
+        <i>
+            <p>pls play the game in landscape mode🙏</p>
+        </i>
+    </div>    
+    <!-- <div class="main-aside"> -->
+        <aside>
+            <section class="bar">
+                <header>
+                    TankS Trouble
+                    <!-- <img src="/PanzerArger/assets/tanklogo.png" alt="logo gry" class="logo" style="font-size:20px"> -->
+                </header>
+                <button class="bar-button" data-type="play">
+                    <i class="fa-solid fa-play"></i>
+                    <p>Play</p>
+                </button>
+                <button class="bar-button" data-type="LAN">
+                    <i class="fa-duotone fa-solid fa-network-wired"></i>
+                    <p>LAN</p>
+                </button>
+                <button class="bar-button" data-type="cosmetics">
+                    <i class="fa-solid fa-paintbrush"></i>
+                    <p>locker</p>
+                </button>
+                <button class="bar-button" data-type="settings">
+                    <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                    </svg> -->
+                    <i class="fa-solid fa-gear"></i>
+                    <p>settings</p>
+                </button>
+                <footer> <p>Copyrights © RT-Studio <span id="currentYear"></span></p> </footer>
+            </section>
+        </aside>
+        <main>
+           <section class="menu active" id="play-menu" data-type="play">
+                <div class="play-header">
+                    <h2>Select Game Mode</h2>
+                </div>
+                <section class="play-section">
+                    <div class="play-config-div" id="play-amount-config">
+                        <button class="play-config" data-playerAmount="1">single player</button>
+                        <button class="play-config" data-playerAmount="2">2 players</button>
+                        <button class="play-config" data-playerAmount="3">3 players</button>
+                        <button class="play-config play-config-selected" data-playerAmount="4">4 players</button>
+                    </div>
+                    <div class="play-config-div" id="play-gamemode-config">
+                        <button class="play-config play-config-selected" data-gamemode="classic">classic</button>
+                        <button class="play-config" data-gamemode="blackout">blackout</button>
+                        <button class="play-config" data-gamemode="fast">speedy</button>
+                        <button class="play-config" data-gamemode="power">power frenzy</button>
+                    </div>
+                    <div class="play-config-div" id="play-map-config">
+                        <button class="play-config" data-maptype="small">small</button>
+                        <button class="play-config play-config-selected" data-maptype="medium">medium</button>
+                        <button class="play-config" data-maptype="large">large</button>
+                        <button class="play-config" data-maptype="custom">custom</button>
+                    </div>
+        
+                </section>
+                <div id="start-div">
+                    <button id="start-button">START</button>
+                </div>
+                <!-- <section id="play-amount-section" class="play-section play-active">
+                    <button class="play-setup-button" id="play-button1" data-amount='1'>
+                        <img src="./assets/player1.svg" alt="solo image" class="play-image">
+                        <p>1</p>
+                        <p>Player</p>
+                    </button>
+                    <button class="play-setup-button" id="play-button2" data-amount='2'>
+                        <img src="./assets/player2.svg" alt="2 players image" class="play-image">
+                        <p>2</p>
+                        <p>Players</p>
+                    </button>
+                    <button class="play-setup-button" id="play-button3" data-amount='3'>
+                        <img src="./assets/player3.svg" alt="3 players image" class="play-image">
+                        <p>3</p>
+                        <p>Players</p>
+                    </button>
+                    <button class="play-setup-button" id="play-button4" data-amount=4'>
+                        <img src="./assets/player4.svg" alt="4 players image" class="play-image">
+                        <p>4</p>
+                        <p>Players</p>
+                    </button>
+                </section>
+                <section id="play-mapsize-section" class="play-section">
+                    <button class="play-setup-button" data-mapSize='1'>
+                        <img src="./assets/player2.svg" alt="2 players image" class="play-image">
+                        <p>8x8</p>
+                        <p>Map size</p>
+                    </button>
+                    <button class="play-setup-button" data-mapSize='2'>
+                        <img src="./assets/player3.svg" alt="3 players image" class="play-image">
+                        <p>16x16</p>
+                        <p>Player</p>
+                    </button>
+                    <button class="play-setup-button" data-mapSize='3'>
+                        <img src="./assets/player4.svg" alt="4 players image" class="play-image">
+                        <p>24x24</p>
+                        <p>Player</p>
+                    </button>
+                </section> -->
+           </section>
+           <section class="menu" id="LAN-menu" data-type="LAN"></section>
+
+           <section class="menu" id="cosmetics-menu" data-type="cosmetics">
+                <div class="theme-wrapper">
+                    <div class="theme-div" data-theme="classic">
+                        <h3 class="theme-header">classic</h3>
+                        <div class="theme-tank-sprites">
+                            <img src="./assets/tank1.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank1.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank1.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank1.svg" alt="tank sprite" class="theme-tank-sprite">
+                        </div>
+                        <div class="theme-palette-div">
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                        </div>
+        
+                    </div>
+                    <div class="theme-div" data-theme="retro">
+                        <h3 class="theme-header">classic</h3>
+                        <div class="theme-tank-sprites">
+                            <img src="./assets/tank2.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank2.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank2.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank2.svg" alt="tank sprite" class="theme-tank-sprite">
+                        </div>
+                        <div class="theme-palette-div">
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                        </div>
+        
+                    </div>
+                    <div class="theme-div" data-theme="hell">
+                        <h3 class="theme-header">classic</h3>
+                        <div class="theme-tank-sprites">
+                            <img src="./assets/tank3.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank3.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank3.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank3.svg" alt="tank sprite" class="theme-tank-sprite">
+                        </div>
+                        <div class="theme-palette-div">
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                        </div>
+                    </div>
+                    <div class="theme-div" data-theme="yellow">
+                        <h3 class="theme-header">classic</h3>
+                        <div class="theme-tank-sprites">
+                            <img src="./assets/tank4.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank4.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank4.svg" alt="tank sprite" class="theme-tank-sprite">
+                            <img src="./assets/tank4.svg" alt="tank sprite" class="theme-tank-sprite">
+                        </div>
+                        <div class="theme-palette-div">
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                            <div class="theme-color"></div>
+                        </div>
+        
+                    </div>
+                </div>
+                <button class="theme-select-button">apply</button>
+           </section>
+           <section class="menu" id="settings-menu" data-type="settings">
+                        <div class="settings-categories">
+                            <h2 class="settings-header">Settings</h2>
+                            <ul class="settings-list">
+                                <li class="setting-category" data-setting="general">general</li>
+                                <li class="setting-category" data-setting="data">your data</li>
+                                <li class="setting-category" data-setting="controls">controls</li>
+                                <li class="setting-category" data-setting="credits">credits</li>
+                            </ul>
+                        </div>
+                        <div class="settings" data-setting="general">
+                            <div class="setting">
+                                <div class="setting-name">high graphics</div>
+                                <button class="setting-value" id="high-graphics">false</button>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-name">remember theme</div>
+                                <button class="setting-value" id="remember-theme-button">true</button>
+                            </div>
+                            <div class="setting">
+                                <div class="setting-name">reset controls</div>
+                                <button class="setting-value" id="reset-controls">confirm</button>
+                            </div>
+                        </div>
+                        <div class="settings" data-setting="data">
+                             <div class="setting">
+                                <div class="setting-name">can we have ur data</div>
+                                <div class="setting-value">yes</div>
+                            </div>
+                        </div>
+                        <div class="settings"  data-setting="controls">
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                                <div class="player-setting">
+                                    <div class="player-setting-name">player1 up</div>
+                                    <div class="player-setting-value">W</div>
+                                </div>
+                        </div>
+                        <div class="settings" data-setting="credits">
+                            <div class="setting">
+                                <div class="setting-name">director</div>
+                                <div class="setting-value">tom hanks</div>
+                            </div>
+                        </div>
+        
+        
+                <section class="login-section" style="display:none;">
+                    <div class="login-card">
+                        <h3>Log in</h3>
+                        <form action="index.php" method="post" class="login-form">
+                            <input type="text" id="username" name="username" required placeholder="Username" maxlength="16">
+                            <input type="password" id="password" name="password" required placeholder="password" maxlength="32">
+                            <input type="submit" id="request" name="request" value="Log in"></input>
+                            <input type="submit" id="request" name="logout" value="log out"></input>
+                        </form>
+                    </div>
+                </section>
+           </section>
+        </main>
+    <!-- </div> -->
+
+
+    <script src="/PanzerArger/main.js?v=2?>"></script>
+</body>
+</html>

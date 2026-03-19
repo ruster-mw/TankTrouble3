@@ -1,0 +1,923 @@
+:root{
+    --color1: #020206;
+    --color2: #ffffff;
+    --color3:/* #c900ae */ #00ffff;
+    --color4: #090913;
+    --color5: #00ffff80;
+    --font1: 'Press Start 2P', sans-serif;  
+}
+html{
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+body{
+    padding: 0;
+    margin: 0;
+    /* background-image: url(./assets/starrynight.gif); */
+    scroll-behavior: smooth;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color1);
+    color: var(--color3);
+    background-color: var(--color1);
+}
+/* .main-aside{
+    width: 100%;
+    height: 100%;
+    display: flex;
+} */
+.overlay{
+    width: 100%;
+    height: 100%;
+    background-color: var(--color4);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    z-index: 1000;
+}
+.overlay>img{
+    width: 50%;
+    height: 50%;
+    min-width: 300px;
+    min-height: 300px;
+}
+.overlay>p{
+    font-family: sans-serif;
+}
+.overlay-hidden{
+    display: none;
+}
+.hidden{
+    display: none;
+}
+/* 
+
+this is the side bar code 
+
+*/
+header{
+    width: 100%;
+    min-height: clamp(80px, 18vh, 230px);
+    text-transform: uppercase;
+    text-shadow: 0 0 14px var(--color5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(1rem, 2.6vw, 4.6rem);
+    margin: 0 auto;
+    font-family: var(--font1);
+    font-style: normal;
+    padding: 10px;
+    box-sizing: border-box;
+
+}
+.logo{
+    width: 80px;
+    height: 80px;
+}
+aside{
+    width: 20%;
+    max-width: 640px;
+    height: 100%;
+    box-sizing: border-box;
+    position: relative;
+    transition: all 0.3s;
+}
+.bar{
+    position: absolute;
+    inset: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 3px;
+    gap: 14px;
+    background-color: var(--color1);
+}
+aside::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(-80deg, var(--color3),var(--color3),var(--color2),var(--color3),var(--color3));
+    z-index: -1;
+    animation: slide 2s infinite linear;
+    background-size: 200% 100%;
+    background-position-x: 150%;
+    transition: all 0.3s;
+}
+@keyframes slide {
+    0%{
+        background-position-x: 150%;
+    }
+    100%{
+        background-position-x: -50%;
+    }
+}
+.bar-button{
+    width: 90%;
+    min-height: 9%;
+    background-color: var(--color1);
+    border: none;
+    transition: background-color,color,box-shadow,transform 0.05s;
+    color: var(--color2);
+    font-family: var(--font1);
+    font-size:  clamp(0.5rem, 1.3vw, 2rem);
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    padding-left: 5px;
+    border: 2px solid var(--color3);
+}
+.bar-button:hover{
+    background-color: var(--color3);
+    cursor: pointer;
+    color: var(--color1);
+    transform: translateX(-3%);
+}
+.bar-button>svg{
+    width: 35px;
+    height: 35px;
+}
+footer{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    box-sizing: border-box;
+    padding: 10px;
+    font-family: var(--font1);
+    font-size: clamp(0.3rem, 0.6vw, 1.3rem);
+}
+
+
+/* 
+
+    this be the code for menus 
+
+*/
+main {
+    /* max-width: 1620px; */
+    width: 80%;
+    height: 100%;
+    position: relative;
+    font-family: var(--font1),sans-serif;
+    max-width: 1920px;
+}
+.menu{
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+/* 
+
+    the play menu 
+
+*/
+
+#play-menu{
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    font-family: 'Press Start 2P', sans-serif;
+    background-color: var(--color1);
+    position: relative;
+    /* background: url(./assets/starrynight.gif); */
+    /* opacity: 0.8; */
+}
+#play-menu::before{
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(68, 68, 68, 0.06), rgba(59, 59, 59, 0.02), rgba(71, 71, 71, 0.06));
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+
+.play-header{
+    width: 100%;
+    height: 25%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(1rem, 2.8vw, 5rem);
+    color: var(--color3);
+    text-shadow: 0 0 14px var(--color5);
+    text-transform: uppercase;
+    word-spacing: -50%;
+}
+.play-section{
+    width: 100%;
+    height: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+.play-config-div{
+    height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 22px;
+}
+.play-config{
+    /* flex: 1; */
+    height: 90%;
+    background-color: var(--color4);
+    text-transform: uppercase;
+    border: 2px solid var(--color3);
+    font-family: var(--font1);
+    color: var(--color2);
+    font-size: clamp(0.8rem,1.2vw,1.8rem);
+    transition: all 0.1s;
+}
+.play-config:hover{
+    transform: scale(1.05);
+}
+.play-config-selected{
+    background-color: var(--color3);
+    color: var(--color1);
+    box-shadow: 0 0 20px var(--color5);
+}
+.play-config-selected-style{
+    translate: 0 -20%;
+    animation: shake linear 1.3s infinite;
+}
+@keyframes shake{
+    0%,100%{
+        transform: rotate(1deg);
+    }
+    10%{
+        transform: rotate(1deg);
+    }
+    33%{
+        transform: rotate(5deg);
+    }
+    67%{
+        transform: rotate(-5deg);
+    }
+}
+#play-amount-config{
+    width: 100%;
+}
+#play-amount-config > button {
+    width: 20%;
+}
+#play-gamemode-config{
+    width: 100%;
+}
+#play-gamemode-config > button{
+    width: 17%;
+}
+#play-map-config{
+    width: 100%;
+}
+#play-map-config > button{
+    width: 14%;
+}
+#start-div{
+    width: 100%;
+    height: 10%;
+    min-height: 130px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#start-button{
+    background-color: var(--color3);
+    color: var(--color1);
+    width: 50%;
+    max-width: 220px;
+    height: 75%;
+    border: none;
+    font-size: clamp(1rem, 1.6vw, 2.3rem);
+    font-family: var(--font1);
+    position: relative;
+    z-index: 1;
+    transform: skew(-6deg);
+    transition: box-shadow 0.1s;
+}
+#start-button:hover{
+    box-shadow: 0 0 8px var(--color3);
+}
+/* .play-section{
+    width: 100%;
+    height: 75%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 35px;
+}
+.play-setup-button{
+    width: 330px;
+    height: 290px;
+    display: block;
+    border: 2px solid var(--color3);
+    background-color: var(--color4);
+    color: var(--color2);
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: clamp(0.7rem, 1.3vw, 2rem);
+}
+.play-setup-button:hover{
+    background-color: var(--color3);
+    color: var(--color1);
+    box-shadow: 0 0 10px var(--color3);
+}
+.play-image{
+    width: 108px;
+    height: 108px;
+}
+
+.play-active{
+    display: flex;
+} */
+
+
+
+/* 
+
+    litwo ojczyzno moja ty jestes jak zdrowie! ile cie trzeba cenic ten tylko sie dowie kto cie stracil
+
+*/
+
+#LAN-menu{
+    /* background-color: var(--color4); */
+    background-image: url('./assets/under.jpg');
+    /* background-size: cover; */
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.8;
+}
+#LAN-menu::before{
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(68, 68, 68, 0.06), rgba(59, 59, 59, 0.02), rgba(71, 71, 71, 0.06));
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+/* 
+
+here goes cosmetics code 
+
+*/
+
+#cosmetics-menu{
+    background-color: var(--color1);
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    
+}
+#cosmetics-menu::before{
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 2;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(68, 68, 68, 0.06), rgba(59, 59, 59, 0.02), rgba(71, 71, 71, 0.06));
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+.theme-wrapper{
+    min-height: 500px;
+    height: 60%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    overflow-x: auto;
+}
+.theme-div{
+    background-color: var(--color4);
+    width: 18%;
+    min-width: 200px;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    border: 4px solid var(--color3);
+    transition: transform 0.1s;
+    user-select: none;
+    position: relative;
+    z-index: 3;
+}
+
+.theme-header{
+    font-family: var(--font1);
+    color: var(--color3);
+    font-size: clamp(0.6rem, 1.3vw , 14rem);
+    text-transform: capitalize;
+}
+.theme-tank-sprites{
+    width: 100%;
+    height: 50%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    place-items: center;
+    gap: 5px;
+}
+.theme-tank-sprite{
+    width: 60%;
+    aspect-ratio: 5 / 8;
+}
+.theme-palette-div{
+    width: 100%;
+    height: 30%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* gap: 8px; */
+}
+.theme-color{
+    width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+    /* background-color: var(--color3); */
+}
+.theme-select-button{
+    font-family: inherit;
+    padding: 24px;
+    font-size: clamp(0.7rem, 1.6vw , 1.8rem);
+    color: var(--color3);
+    background-color: var(--color1);
+    border: 2px solid var(--color3);
+    transition: all 0.1s;
+}
+.theme-select-button:hover{
+    border: 2px solid var(--color1);
+    background-color: var(--color3);
+    color: var(--color1);
+}
+.theme-select-button:active{
+    animation: click 0.1s linear;
+}
+.selected-theme{
+    transform: translateY(-3%);
+}
+@keyframes click {
+    0%, 100%{
+        transform: scale(1);
+    }
+    50%{
+        transform: scale(0.9);
+    }
+
+}
+/* 
+
+    litwo ojczyzno moja ty jestes jak zdrowie! ile cie trzeba cenic ten tylko sie dowie kto cie stracil
+
+*/
+.keybinds-div{
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
+    width: 400px;
+    height: 200px;
+    background-color: var(--color4);
+    border: 2px solid var(--color3);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+.keybinds-div.active {
+    display: flex;
+}
+.keybinds-div > p{
+    text-align: center;
+    font-size: 1rem;
+    color: var(--color3);
+    font-family: var(--font1);
+}
+#keybinds-close-button{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 40px;
+    height: 40px;
+    transform: translate(50%,-50%);
+    background-color: var(--color4);
+    border: 2px solid var(--color3);
+    color: var(--color3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+}
+#keybind-input{
+    width: 80%;
+    height: 35px;
+    background-color: transparent;
+    border: 2px solid var(--color2);
+    outline: 1px;
+    text-align: center;
+    color: var(--color2);
+    text-transform: uppercase;
+    font-size: 1.4rem;
+}
+#settings-menu{
+    background-color: var(--color1);
+    /* max-width: 2560px; */
+    height: 100%;
+    /* display: flex; */
+    align-items: center;
+    justify-content: center;
+}
+#settings-menu::before{
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(68, 68, 68, 0.06), rgba(59, 59, 59, 0.02), rgba(71, 71, 71, 0.06));
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+.settings-categories{
+    width: 22%;
+    height: 70%;
+    max-height: 800px;
+    background-color: var(--color1);
+    border: 2px solid var(--color3);
+    box-sizing: border-box;
+}
+.settings-header{
+    display: block;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(1.3rem,2vw,2.4rem);
+    text-shadow: 0 0 12px var(--color5);
+}
+.settings-list{
+    list-style-type: none;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-left: 30px;
+}
+.setting-category{
+    padding: 10px;
+    font-size: clamp(0.8rem,1.1vw,2rem);
+}
+.selected-category{
+    border-left: 10px solid var(--color3);
+}
+.settings::-webkit-scrollbar {
+    width: 6px;
+}
+.settings::-webkit-scrollbar-thumb {
+    background: var(--color3);
+}
+.settings{
+    height: 70%;
+    max-height: 800px;
+    width: 50%;
+    overflow-y: scroll;
+    display: none;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 3vh 0;
+    gap: 30px;
+    background-color: var(--color4);
+}
+.setting{
+    width: 90%;
+    min-height: 50px;
+    display: flex;
+    gap: 14%;
+}
+.player-setting{
+    width: 90%;
+    min-height: 50px;
+    display: flex;
+    gap: 14%;
+}
+.player-setting-name{
+    width: 48%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(0.7rem, 1vw, 2rem);
+}
+.player-setting-value{
+    width: 48%;
+    background-color: var(--color3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color1);
+    user-select: none;
+}
+.active-setting {
+    display: flex;
+}
+.setting-name{
+    width: 48%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(0.7rem, 1vw, 2rem);
+}
+.setting-value{
+    width: 48%;
+    background-color: var(--color3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color1);
+    user-select: none;
+    font-family: inherit;
+    border: none;
+    font-size: clamp(0.7rem, 1vw, 2rem);
+    transform: scale(1);
+    transform: 1s;
+}
+.setting-value:active{
+    transform: scale(0.95);
+}
+
+
+
+
+/* login */
+.login-section{
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.login-card{
+    width: 50%;
+    height: 60%;
+    border: 2px solid var(--color3);
+    box-shadow: 0 0px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 10px;
+    background-color: var(--color4);
+}
+
+.login-card > h3{
+    font-size: clamp(1.4rem, 3.2vw, 4.3rem);
+    margin: 0;
+    height: 35%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    word-spacing: -80%;
+    text-shadow: 0 0 16px var(--color3);
+}
+.login-form{
+    width: 90%;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+}
+#username,#password{
+    outline: none;
+    width: 90%;
+    height: 30px;
+    background-color: transparent;
+    border: none;
+    border-bottom: 4px solid var(--color3);
+    color: var(--color2);
+    font-size: clamp(0.7rem, 1vw, 2rem);
+    font-family: var(--font1);
+    padding: 10px;
+    transition: box-shadow 0.3s;
+}
+#username::placeholder,#password::placeholder{
+    color: var(--color3);
+    opacity: 0.3;
+}
+#username:focus,#password:focus{
+    box-shadow: 0 0 10px var(--color3)
+}
+#request{
+    width: 140px;
+    height: 50px;
+    border: none;
+    background-color: var(--color3);
+    font-family: var(--font1);
+    word-spacing: -60%;
+    font-size: clamp(0.7rem, 1vw, 2rem);
+    transition: all 0.2s;
+    margin-top: 30px;
+}
+#request:hover{
+    background-color: var(--color1);
+    border: 2px solid var(--color3);
+    color: var(--color3);
+}
+
+
+/* 
+
+    game style
+
+*/
+.game-section{
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color4);
+    position: relative;
+}
+/* .game-section::before{
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+} */
+#gameCanvas{
+    background-color: var(--color1);
+    /* background-image: url(./assets/image.png); */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 0 0 11px var(--color5);
+}
+.UI{
+    position: absolute;
+    top: 1.5vw;
+    left: 1.5vw;
+    display: flex;
+    flex-direction: column;
+    min-width: 8vw;
+    width: 16vw;
+    min-height: 37%;
+    /* gap: 12px; */
+    /* z-index: 10; */
+    background: var(--color1);
+    border: 2px solid var(--color3);
+}
+.scoreboard{
+    /* position: absolute; */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* min-height: 80%; */
+    /* gap: 6px; */
+    /* z-index: 10; */
+    padding: 9px;
+    background: var(--color1);
+    border: 2px solid var(--color3);
+}
+.player-score{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    /* padding: 4px; */
+    background-color: var(--color1);
+    font-family: var(--font1);
+    font-size: clamp(0.7rem, 1.2vw, 1.9rem);
+    flex: 1;
+    user-select: none;
+}
+.player-score img {
+    width: 35px;
+    aspect-ratio: 5 / 8;
+    user-select: none;
+}
+.score-text{
+    display: flex;
+    flex-direction: column;
+    color: var(--color2);
+    gap: 3px;
+}
+.player-name{
+    background-color: transparent;
+    outline: none;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--color2);
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+.player-name:focus{
+    box-shadow: -2px 2px 0 2px var(--color3);
+}
+.back-button{
+    background-color: var(--color3);
+    border: none;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color1);
+    font-family: var(--font1);
+    font-size: clamp(1.4rem, 1.4vw, 3.6rem);
+    border: 2px solid var(--color3);
+    transition: all 0.1s;
+}
+.back-button:hover{
+    background-color: var(--color1);
+    color: var(--color3);
+}
+
+.active{
+    display: flex;
+}
+
+
+
+
+
+
+
+
+/* pandemonium */
+
+@media (min-width: 1200px) {
+    .bar-button{
+        padding-left: 35px;
+    }
+    header{
+        padding-left: 20px;
+    }
+    
+}
+@media (max-width: 1200px) {
+    .settings{
+        width: 68%;
+    }
+    .settings-categories{
+        width: 32%;
+    }
+    .settings-header{
+        font-size: clamp(0.9rem,2.3vw,2rem);
+    }
+}
+@media (min-width: 1930px){
+    .bar{
+        gap: 20px;
+    }
+    .play-config-div{
+        height: 140px;
+    }
+    .play-section{
+        gap: 10px
+    }
+}
