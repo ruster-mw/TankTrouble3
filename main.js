@@ -1043,6 +1043,7 @@ const hitAxes = [voronoiAxis, ...tankAxes]
                     player.cos,   
                     1,
                     this ))
+                player.coolDown = 0;
                 break;
                 case 2:
                     this.projectiles.push(new laserProjectile(
@@ -1053,16 +1054,14 @@ const hitAxes = [voronoiAxis, ...tankAxes]
                     2, 
                     this ))
                     this.shakeTime = 1
-                    this.shakeStrength = 8
-                    this.particles.push(new RectParticle(player.x, player.y, 5, 13, 400, 0.2, player.angle, this))
-                    this.particles.push(new RectParticle(player.x, player.y, 5, 13, 400, 0.2, player.angle + 20, this))
-                    this.particles.push(new RectParticle(player.x, player.y, 5, 13, 400, 0.2, player.angle + 40, this))
-                    this.particles.push(new RectParticle(player.x, player.y, 5, 13, 400, 0.2, player.angle - 20, this))
-                    this.particles.push(new RectParticle(player.x, player.y, 5, 13, 400, 0.2, player.angle - 40, this))
-
+                    this.shakeStrength = 10
+                    for (let i = 0; i <= 8; i++){
+                        let deviation = i % 2 == 0 ? Math.floor(Math.random() * 45) : -Math.floor(Math.random() * 45)
+                        this.particles.push(new ShotGunParticle(player.x, player.y, 4, 6, 300, 0.3, player.angle + deviation, this))
+                    }
+                player.coolDown = -0.6;
                 break;
             }
-            player.coolDown = 0;
             player.ammo.shift();
         } 
         if(player.reload >= player.reloadTime && player.ammo.length < player.magazine){
@@ -1154,6 +1153,8 @@ const hitAxes = [voronoiAxis, ...tankAxes]
         this.updatePowerUps(this.secondsPassed)
 
         ctx.restore()
+
+
         this.projectiles = this.projectiles.filter(p => !p.dead)
         this.players = this.players.filter(p => !p.dead)
         this.particles = this.particles.filter(p => !p.dead)
@@ -1163,6 +1164,7 @@ const hitAxes = [voronoiAxis, ...tankAxes]
         // for (let i = 1; i < 50_000_000; i++){
         //     let ab = 2+2
         // }
+
         if (this.players.length <= 1 && !this.roundOver){
             this.playersScore[this.players[0].ind]++
             this.updateScores()
@@ -1460,7 +1462,7 @@ class Projectile {
         this.ctx.save()
         if (this.game.graphics){
             this.ctx.shadowColor = this.color
-            this.ctx.shadowBlur = 20
+            this.ctx.shadowBlur = 15
             this.ctx.shadowOffsetX = 0
             this.ctx.shadowOffsetY = 0
         }
@@ -1530,6 +1532,25 @@ class laserProjectile extends Projectile {
     onPlayerHit(collide, player) {
         this.game.prjPlayerCollision(collide, player, this)
     }
+    drawProjectile(){
+        this.ctx.save()
+        if (this.game.graphics){
+            this.ctx.shadowColor = this.color
+            this.ctx.shadowBlur = 20
+            this.ctx.shadowOffsetX = 0
+            this.ctx.shadowOffsetY = 0
+            this.game.particles.push(new Particle(this.x, this.y, this.radius, 0, 0.2, this.game))
+        }
+        this.ctx.beginPath();
+        this.ctx.fillStyle = this.color
+        this.ctx.arc(this.x, this.y, this.radius, 0, this.radians)
+        this.ctx.fill()
+        if (debug){
+            this.ctx.fillStyle = "#ff0000"
+            this.ctx.fillRect(this.x, this.y, 1, 1)
+        }
+        this.ctx.restore()
+    }   
 }
 // |---------|
 // Cell class 
@@ -1562,7 +1583,7 @@ class Cell {
         ctx.fillStyle = this.color;
         if (this.game.graphics){
             ctx.shadowColor = this.game.selectedTheme.colors[2];
-            ctx.shadowBlur = 4;
+            ctx.shadowBlur = 3;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
         }
@@ -1695,7 +1716,7 @@ class RectParticle {
         this.vx;
         this.vy;
         this.lifeTime = lifetime;
-        this.angle = angle
+        this.angle = angle;
         this.dead = false;
         this.radianRatio = Math.PI / 180;
         this.initialize();
@@ -1711,12 +1732,31 @@ class RectParticle {
             this.width,
             this.height
             );
-        this.ctx.restore();
+        this.ctx.restore()
     }
 
     initialize(){
-        this.vx = this.speed * Math.sin(this.angle * this.radianRatio);
-        this.vy = -this.speed * Math.cos(this.angle * this.radianRatio);
+        this.vx = this.speed * Math.sin(this.angle * this.radianRatio)
+        this.vy = -this.speed * Math.cos(this.angle * this.radianRatio)
+    }
+}
+class ShotGunParticle extends RectParticle {
+    constructor(x, y, width, height, speed, lifetime, angle, game){
+        super(x, y, width, height, speed, lifetime, angle, game)
+    }
+    drawParticle(){
+        this.ctx.save()
+        this.ctx.translate(this.x, this.y)
+        this.ctx.rotate(this.angle)
+        this.ctx.fillStyle = this.color
+        this.ctx.fillRect(
+            -this.width / 2,
+            -this.height / 2,
+            this.width,
+            this.height
+            );
+        this.ctx.restore()
+        this.color = this.color.slice(0, 7) + Math.max(0, parseInt(this.color.slice(7, 9), 16) - 3).toString(16).padStart(2, '0')
     }
 }
 // |+++++++++|
@@ -1734,10 +1774,10 @@ class PowerUp {
     drawPowerUp(){
         this.ctx.save()
         if (this.game.graphics){
-            this.ctx.shadowColor = this.game.selectedTheme.colors[2];
-            this.ctx.shadowBlur = 10;
-            this.ctx.shadowOffsetX = 0;
-            this.ctx.shadowOffsetY = 0;
+            this.ctx.shadowColor = this.game.selectedTheme.colors[2]
+            this.ctx.shadowBlur = 10
+            this.ctx.shadowOffsetX = 0
+            this.ctx.shadowOffsetY = 0
         }
         this.ctx.fillStyle = this.game.selectedTheme.colors[2]
         this.ctx.fillRect(this.x, this.y, this.size, this.size)
@@ -1764,7 +1804,7 @@ class movementSpeedPU extends PowerUp{
 class reloadSpeedPU extends PowerUp{
     constructor(x, y, game) {
         super(x, y, game);
-        this.image = powerUpSprites.reloadSpeedPU
+        this.image = powerUpSprites.reloadSpeedPU;
     }
     onPickup(player) {
         player.reloadTime *= 0.1;
@@ -1804,8 +1844,8 @@ class laserPU extends PowerUp{
         this.dead = true
     }
 }
-
-const POWER_UPS = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU]
+const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU]
+const POWER_UPS = [laserPU]
 const powerUpSprites = {
     movementSpeedPU: loadImage('./assets/movementSpeedPU.png'),
     reloadSpeedPU: loadImage('./assets/reloadSpeedPU.png'),
