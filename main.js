@@ -124,7 +124,7 @@ const CFG = {
     dthSmallprtSpeed: 40,
     dthSmallprtLifeTime: 1,
     dthSmallprtAmount: 6,
-    pwrupPrtRadius: 14,
+    pwrupPrtRadius: 20,
     pwrupPrtSpeed: 30,
     pwrupPrtLifeTime: 4,
     pwrupPrtAmount: 12, 
@@ -149,9 +149,15 @@ const CFG = {
         },
         2: {
             speed: 1500,
-            radius: 25,
+            radius: 23,
             lifeTime: 10,
             gracePeriod: 0.3
+        },
+        3: {    
+            speed: 500,
+            radius: 3,
+            lifeTime: 20,
+            gracePeriod: 0.2
         }
     },
     // power up
@@ -911,35 +917,35 @@ class Game {
         const checkAxes = [{x: 1, y: 0 }, {x: 0, y: 1 }, ...tankAxes,] // walls never rotate so just use the normal axes (whatever that means)
         
         player.neighborCells.forEach(cell => {
-            cell.wallSegments.forEach(segs => { //haha segs 
-                const wallCorners = this.getWallCorners(segs)
-
-                const collide = this.SAT(tankCorners, wallCorners, checkAxes)
-                
-                if (collide){
-                    this.playerWallCollision(collide, player, segs)
-                }
-            })
+            if (!player.intangibility){
+                cell.wallSegments.forEach(segs => { //haha segs 
+                    const wallCorners = this.getWallCorners(segs)            
+                    const collide = this.SAT(tankCorners, wallCorners, checkAxes)
+                    if (collide){
+                        this.playerWallCollision(collide, player, segs)
+                    }
+                })
+            }
         })
         player.projectilesCollision.forEach(prj => {
             const dx = prj.x - player.x
-const dy = prj.y - player.y
+            const dy = prj.y - player.y
 
-const localX = dx * tankAxes[1].x + dy * tankAxes[1].y
-const localY = dx * tankAxes[0].x + dy * tankAxes[0].y
+            const localX = dx * tankAxes[1].x + dy * tankAxes[1].y
+            const localY = dx * tankAxes[0].x + dy * tankAxes[0].y
 
-const clampedX = Math.max(-player.width / 2, Math.min(player.width / 2, localX))
-const clampedY = Math.max(-player.height / 2, Math.min(player.height / 2, localY))
+            const clampedX = Math.max(-player.width / 2, Math.min(player.width / 2, localX))
+            const clampedY = Math.max(-player.height / 2, Math.min(player.height / 2, localY))
 
-const closestX = player.x + clampedX * tankAxes[1].x + clampedY * tankAxes[0].x
-const closestY = player.y + clampedX * tankAxes[1].y + clampedY * tankAxes[0].y
+            const closestX = player.x + clampedX * tankAxes[1].x + clampedY * tankAxes[0].x
+            const closestY = player.y + clampedX * tankAxes[1].y + clampedY * tankAxes[0].y
 
-const distX = prj.x - closestX
-const distY = prj.y - closestY
-const dist = Math.sqrt(distX * distX + distY * distY)
+            const distX = prj.x - closestX
+            const distY = prj.y - closestY
+            const dist = Math.sqrt(distX * distX + distY * distY)
 
-const voronoiAxis = { x: distX / dist, y: distY / dist }
-const hitAxes = [voronoiAxis, ...tankAxes]
+            const voronoiAxis = { x: distX / dist, y: distY / dist }
+            const hitAxes = [voronoiAxis, ...tankAxes]
             const collide = this.SATprj(prj, tankCorners, hitAxes)
             if(collide){
                 prj.onPlayerHit(collide, player)
@@ -947,19 +953,22 @@ const hitAxes = [voronoiAxis, ...tankAxes]
         })
         
         this.powerUps.forEach(pwrup => {
-            const pwrupCorners = [
+            const pwrupCenterX = pwrup.x + pwrup.size / 2;
+            const pwrupCenterY = pwrup.y + pwrup.size / 2;
+
+            if (Math.pow((player.x - pwrupCenterX), 2) + Math.pow((player.y - pwrupCenterY), 2) < Math.pow(player.height + pwrup.size, 2)){
+                const pwrupCorners = [
                 {x: pwrup.x, y: pwrup.y},
                 {x: pwrup.x + pwrup.size, y: pwrup.y},
                 {x: pwrup.x + pwrup.size, y: pwrup.y + pwrup.size},
                 {x: pwrup.x, y: pwrup.y + pwrup.size},
-            ]
-            const collide = this.SAT(tankCorners, pwrupCorners, checkAxes)
-
-            if(collide){
-                pwrup.onPickup(player)
-            }
+                ]
+                const collide = this.SAT(tankCorners, pwrupCorners, checkAxes)
+                if(collide){
+                    pwrup.onPickup(player)
+                }
+            }  
         })
-
     }
     prjPlayerCollision(collide, player, prj){
         let index = this.players.indexOf(player)
@@ -1043,8 +1052,8 @@ const hitAxes = [voronoiAxis, ...tankAxes]
                     player.cos,   
                     1,
                     this ))
-                player.coolDown = 0;
-                break;
+                    player.coolDown = 0;
+                    break;
                 case 2:
                     this.projectiles.push(new laserProjectile(
                     player.x + (player.height / 2 + this.GCFG.projectiles[2].radius) * player.sin,
@@ -1055,18 +1064,45 @@ const hitAxes = [voronoiAxis, ...tankAxes]
                     this ))
                     this.shakeTime = 1
                     this.shakeStrength = 10
-                    for (let i = 0; i <= 8; i++){
-                        let deviation = i % 2 == 0 ? Math.floor(Math.random() * 45) : -Math.floor(Math.random() * 45)
-                        this.particles.push(new ShotGunParticle(player.x, player.y, 4, 6, 300, 0.3, player.angle + deviation, this))
+                    this.shotgunParticlesSpawn(player)
+                    player.coolDown = -0.6;
+                    break;
+                case 3:
+                    for (let i = -25; i <= 25; i+=3){
+                        const angleSin = Math.sin((player.angle + i) * this.radianRatio)
+                        const angleCos = Math.cos((player.angle + i) * this.radianRatio)
+                        this.projectiles.push(new shotgunProjectile(
+                            player.x + (player.height / 2 + this.GCFG.projectiles[3].radius) * angleSin,
+                            player.y - (player.height / 2 + this.GCFG.projectiles[3].radius) * angleCos,
+                            angleSin,
+                            angleCos,   
+                            3,
+                            this ))
                     }
-                player.coolDown = -0.6;
-                break;
+                    this.shotgunParticlesSpawn(player)
+                    player.coolDown = -0.6;
+                    break;
+                default:
+                    this.projectiles.push(new BaseProjectile(
+                    player.x + (player.height / 2 + this.GCFG.projectiles[1].radius) * player.sin,
+                    player.y - (player.height / 2 + this.GCFG.projectiles[1].radius) * player.cos,
+                    player.sin,
+                    player.cos,   
+                    1,
+                    this ))
+                    player.coolDown = 0;
             }
             player.ammo.shift();
         } 
         if(player.reload >= player.reloadTime && player.ammo.length < player.magazine){
             player.reload = 0
             player.ammo.push(1)
+        }
+    }
+    shotgunParticlesSpawn(player){
+        for (let i = 0; i <= 8; i++){
+            let deviation = i % 2 == 0 ? Math.floor(Math.random() * 45) : -Math.floor(Math.random() * 45)
+            this.particles.push(new ShotGunParticle(player.x, player.y, 4, 6, 300, 0.3, player.angle + deviation, this))
         }
     }
     // i think its not needed?
@@ -1365,6 +1401,7 @@ class Tank {
         this.sin = 0;
         this.cos = 1;
         this.dead = false;
+        this.intangibility = false;
         this.currentCell();
     }
     drawTank(){
@@ -1377,7 +1414,9 @@ class Tank {
             {x: this.width / 2, y: this.height / 2},
             {x: -this.width / 2, y: this.height / 2}
         ]
-
+        if (this.intangibility){
+            this.ctx.globalAlpha = 0.5;
+        }
         this.ctx.drawImage(this.image, -this.width / 2, -this.height / 2 - CFG.tankBarrelHeight, this.width, this.height + CFG.tankBarrelHeight)
         
         if (debug) {
@@ -1531,6 +1570,44 @@ class laserProjectile extends Projectile {
     }
     onPlayerHit(collide, player) {
         this.game.prjPlayerCollision(collide, player, this)
+    }
+    drawProjectile(){
+        this.ctx.save()
+        if (this.game.graphics){
+            this.ctx.shadowColor = this.color
+            this.ctx.shadowBlur = 20
+            this.ctx.shadowOffsetX = 0
+            this.ctx.shadowOffsetY = 0
+            this.game.particles.push(new Particle(this.x, this.y, this.radius, 0, 0.2, this.game))
+        }
+        this.ctx.beginPath();
+        this.ctx.fillStyle = this.color
+        this.ctx.arc(this.x, this.y, this.radius, 0, this.radians)
+        this.ctx.fill()
+        if (debug){
+            this.ctx.fillStyle = "#ff0000"
+            this.ctx.fillRect(this.x, this.y, 1, 1)
+        }
+        this.ctx.restore()
+    }   
+}
+class shotgunProjectile extends Projectile {
+    constructor(x, y, sin, cos, prjId, game) {
+        super(x, y, sin, cos, prjId, game);
+        this.bounce = 1;
+    }
+    onWallHit(collide, segs) { 
+        if(this.bounce === 0){
+            this.dead = true
+        } else {
+            this.bounce--
+            this.game.prjWallCollision(collide, this, segs)
+            return true;
+        }
+    }
+    onPlayerHit(collide, player) {
+        this.game.prjPlayerCollision(collide, player, this)
+        this.dead = true
     }
     drawProjectile(){
         this.ctx.save()
@@ -1844,13 +1921,37 @@ class laserPU extends PowerUp{
         this.dead = true
     }
 }
-const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU]
-const POWER_UPS = [laserPU]
+class ghostPU extends PowerUp{
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.image = powerUpSprites.ghostPU;
+    }
+    onPickup(player) {
+        player.intangibility = true;
+        this.dead = true
+        setTimeout(() => player.intangibility = false, 12000);
+    }
+}
+class shotgunPU extends PowerUp{
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.image = powerUpSprites.shotgunPU
+    }
+    onPickup(player) {
+        player.ammo.unshift(3)
+        this.dead = true
+    }
+}
+
+const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU]
+const POWER_UPS = [shotgunPU,laserPU]
 const powerUpSprites = {
     movementSpeedPU: loadImage('./assets/movementSpeedPU.png'),
     reloadSpeedPU: loadImage('./assets/reloadSpeedPU.png'),
     refreshPU: loadImage('./assets/refreshPU.png'),
-    laserPU: loadImage('./assets/laserPU.png')
+    laserPU: loadImage('./assets/laserPU.png'),
+    ghostPU: loadImage('./assets/ghostPU.png'),
+    shotgunPU: loadImage('./assets/shotgunPU.png')
 }
 function loadImage(src){
     const img = new Image();
