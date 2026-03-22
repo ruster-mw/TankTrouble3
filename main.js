@@ -1944,7 +1944,7 @@ class shotgunPU extends PowerUp{
 }
 
 const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU]
-const POWER_UPS = [shotgunPU,laserPU]
+const POWER_UPS = POWER_UPS_ALL
 const powerUpSprites = {
     movementSpeedPU: loadImage('./assets/movementSpeedPU.png'),
     reloadSpeedPU: loadImage('./assets/reloadSpeedPU.png'),
