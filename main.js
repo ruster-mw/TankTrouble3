@@ -90,13 +90,13 @@ const Themes = [
     {
         title: 'retro',
         tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
-        colors: ['#e7e7e7', '#030303', '#070707', '#bdbcbc', '#07070780'],
+        colors: ['#e7e7e7', '#030303', '#070707', '#c7c7c7', '#07070780'],
         backgroundUrl: './assets/image.png',
         explosionParticle: "#0000004d"
     },
     {
         title: 'hell',
-        tankSprites: ['./assets/tank1.svg', './assets/tank2.svg', './assets/tank3.svg', './assets/tank4.svg'],
+        tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
         colors: ['#060202', '#ff0000', '#ff0000', '#130909', '#ff000080'],
         backgroundUrl: './assets/image.png',
         explosionParticle: "#ff00004d"
@@ -104,7 +104,7 @@ const Themes = [
     {
         title: 'yellow',
         tankSprites: ['./assets/PlayerOne.png', './assets/PlayerTwo.png', './assets/PlayerThree.png', './assets/PlayerFour.png'],
-        colors: ['#020206', '#ffffff', 'hsl(61, 100%, 50%)', 'hsl(61, 36%, 6%)', 'hsla(61, 100%, 10%, 0.50)'],
+        colors: ['#060602', '#ffffff', 'hsl(61, 100%, 50%)', 'hsl(61, 36%, 6%)', 'hsla(61, 100%, 10%, 0.50)'],
         backgroundUrl: './assets/image.png',
         explosionParticle: "#fbff004d"
     }
@@ -168,7 +168,7 @@ const CFG = {
     },
     // power up
     pwrupSize: 40,
-    pwrupCooldown: 3,
+    pwrupCooldown: 12,
 }
 
 
@@ -235,11 +235,17 @@ graphicsButton.addEventListener('click',() => {
 remeberThemeButton.addEventListener('click', () => {
     optionsConfig.rememberTheme = !optionsConfig.rememberTheme
     remeberThemeButton.innerText = optionsConfig.rememberTheme
-    localStorage.setItem('optionsConfig', JSON.stringify(optionsConfig));
-    localStorage.removeItem('themeName')
-    localStorage.removeItem('themeID')
-    if (!optionsConfig.rememberTheme)
-        selectedTheme = Themes[0]
+    if (optionsConfig.rememberTheme){
+        localStorage.setItem('optionsConfig', JSON.stringify(optionsConfig));
+        localStorage.setItem('themeName', selectedTheme.title)
+        localStorage.setItem('themeID', Themes.indexOf(selectedTheme))
+    } else {
+        localStorage.setItem('optionsConfig', JSON.stringify(optionsConfig));
+        localStorage.removeItem('themeName')
+        localStorage.removeItem('themeID')
+    }
+    // if (!optionsConfig.rememberTheme)
+    //     selectedTheme = Themes[0]
 })
 
 settingsList.addEventListener('click', (e) => {
@@ -364,11 +370,10 @@ themeDivs.forEach((theme, index) => {
     })
 
 })
-themeDivs.forEach(them => {
-    them.addEventListener('click', () => {
-        selectedTheme = Themes[Array.from(themeDivs).indexOf(them)]
-        themeDivs.forEach(th => {
-            if(th.dataset.theme == selectedTheme.title){
+themeDivs.forEach((them,index) => {
+    them.addEventListener('click', (e) => {
+        themeDivs.forEach((th,ind) => {
+            if(th.dataset.theme == e.target.closest('.theme-div').dataset.theme){
                 th.classList.add('selected-theme')
             } else {
                 th.classList.remove('selected-theme')
@@ -382,6 +387,8 @@ themeDivs.forEach(them => {
 
 
 themeSelectButton.addEventListener('click', () => {
+    const selectedDiv = document.querySelector('.theme-div.selected-theme')
+    selectedTheme = Themes[Array.from(themeDivs).indexOf(selectedDiv)]
     loadTheme(selectedTheme)
     if (optionsConfig.rememberTheme){
         localStorage.setItem('themeName',selectedTheme.title)
@@ -414,7 +421,7 @@ const main = document.querySelector('main')
 const aside = document.querySelector('aside')
 const gameSection = document.querySelector('.game-section')
 const canvas = document.querySelector('#gameCanvas')
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d")
 const backButton = document.querySelector(".back-button")
 const scoreboard = document.querySelector('.scoreboard')
 let playerAmount = 4;
@@ -576,7 +583,15 @@ class Game {
         this.offCtx = this.offScreenCanvas.getContext('2d');
         this.redraw = true
 
-        this.GCFG = CFG
+        this.GCFG = [];
+        Object.assign(this.GCFG, CFG)
+        if (this.gameMode == "kachow"){
+            this.GCFG.tankMaxVelocity *= 2;
+            this.GCFG.tankAcceleration *= 2;
+            this.GCFG.tankRotationSpeed *= 1.5;
+        } else if (this.gameMode == "power"){
+            this.GCFG.pwrupCooldown *=  0.3;
+        }
         this.gameRunning = true;
         this.roundOver = false;
         this.shakeTime = 0;
@@ -593,7 +608,7 @@ class Game {
 
         this.powerUps = [];
         this.powerUpMaxCoolDown = this.GCFG.pwrupCooldown;
-        this.powerUpCooldown = 0;
+        this.powerUpCooldown = 6;
 
         // maze vars
         this.mapCells = this.mapSizes.get(mapType);
@@ -609,6 +624,7 @@ class Game {
         this.controller = [];
         this.playersScore = new Array(4).fill(0)
         this.generateScoreboard();
+        console.log(selectedTheme)
         this.generateMaze();
         this.spawnPlayers();
         this.setupController();
@@ -875,10 +891,14 @@ class Game {
 
         // get which velocity to cancel
         const moveDirection = {x: player.sin, y: -player.cos}
-        const velocity = (moveDirection.x * axis.x + moveDirection.y * axis.y) * player.velocity
+        const velocity = (moveDirection.x * axis.x + moveDirection.y * axis.y)
 
         if (velocity < 0){
-            player.velocity = 0
+            if (this.gameMode == "kachow") {
+                player.velocity = -player.velocity * 0.8
+            } else {
+                player.velocity = 0
+            }
         }
     }
     prjWallCollision(collide, prj, segs){
@@ -1312,7 +1332,7 @@ class Game {
 
         for (let i = 0; i < this.mapCells; i++){
             for (let j = 0; j < this.mapCells; j++){
-                let cell = new Cell(i, j, this.cellSize, this.color3, this)
+                let cell = new Cell(i, j, this.cellSize, this)
                 this.cells.push(cell)
             }
         }
@@ -1393,10 +1413,11 @@ class Tank {
         this.y = y;
         this.sprite = sprite;
         this.game = game;
-        this.controls = controls
-        this.ctx = game.ctx
-        this.width = CFG.tankWidth;
-        this.height = CFG.tankHeight;
+        this.controls = controls;
+        this.ctx = game.ctx;
+        this.cfg = game.GCFG;
+        this.width = this.cfg.tankWidth;
+        this.height = this.cfg.tankHeight;
         this.image = new Image();
         this.image.src = this.sprite;
         // get the corners when rotates useful for collision :)
@@ -1406,19 +1427,19 @@ class Tank {
             {x: this.width / 2, y: this.height / 2},
             {x: -this.width / 2, y: this.height / 2}
         ]
-        this.maxCoolDown = CFG.tankMaxCoolDown;
+        this.maxCoolDown = this.cfg.tankMaxCoolDown;
         this.coolDown = this.maxCoolDown;
-        this.magazine = CFG.tankMagazine;
+        this.magazine = this.cfg.tankMagazine;
         this.ammo = new Array(this.magazine).fill(1);
-        this.reloadTime = CFG.tankReloadTime;
+        this.reloadTime = this.cfg.tankReloadTime;
         this.reload = 0;
         this.shieldHP = 0;
         this.angle = 0;
         this.velocity = 0;
-        this.maxVelocity = CFG.tankMaxVelocity;
-        this.acceleration = CFG.tankAcceleration;
-        this.friction = CFG.tankFriction;
-        this.rotationSpeed = CFG.tankRotationSpeed;
+        this.maxVelocity = this.cfg.tankMaxVelocity;
+        this.acceleration = this.cfg.tankAcceleration;
+        this.friction = this.cfg.tankFriction;
+        this.rotationSpeed = this.cfg.tankRotationSpeed;
         this.moving = 0;
         this.rotating = 0;
         this.cell = [];
@@ -1426,7 +1447,7 @@ class Tank {
         this.neighborCells = [];
         this.projectilesCollision = [];
         this.cellsBool = true;
-        this.radianRatio = CFG.radianRatio;
+        this.radianRatio = this.cfg.radianRatio;
         this.sin = 0;
         this.cos = 1;
         this.dead = false;
@@ -1446,14 +1467,14 @@ class Tank {
         if (this.intangibility){
             this.ctx.globalAlpha = 0.5;
         }
-        this.ctx.drawImage(this.image, -this.width / 2, -this.height / 2 - CFG.tankBarrelHeight, this.width, this.height + CFG.tankBarrelHeight)
+        this.ctx.drawImage(this.image, -this.width / 2, -this.height / 2 - this.cfg.tankBarrelHeight, this.width, this.height + this.cfg.tankBarrelHeight)
         if (this.shieldHP > 0){
-            this.ctx.strokeStyle = this.game.selectedTheme[2]
+            this.ctx.strokeStyle = this.game.selectedTheme.colors[2]
             this.ctx.strokeWidth = 4
-            this.ctx.fillStyle = this.game.selectedTheme[2]
-            this.ctx.strokeRect(-this.width / 2 - 5, -this.height / 2 - 5, this.width + 10, this.height + 10)
-            this.ctx.globalAlpha = this.shieldHP / 6
-            this.ctx.fillRect(-this.width / 2 - 5, -this.height / 2 - 5, this.width + 10, this.height + 10)
+            this.ctx.fillStyle = this.game.selectedTheme.colors[2]
+            this.ctx.strokeRect(-this.width / 2 - 5, -this.height / 2 - 11, this.width + 10, this.height + 10)
+            this.ctx.globalAlpha = this.shieldHP / 8
+            this.ctx.fillRect(-this.width / 2 - 5, -this.height / 2 - 11, this.width + 10, this.height + 10)
         }
         if (debug) {
             this.ctx.strokeStyle = '#FF00FF';
@@ -1537,12 +1558,7 @@ class Projectile {
     }
     drawProjectile(){
         this.ctx.save()
-        if (this.game.graphics){
-            this.ctx.shadowColor = this.color
-            this.ctx.shadowBlur = 15
-            this.ctx.shadowOffsetX = 0
-            this.ctx.shadowOffsetY = 0
-        }
+        
         this.ctx.beginPath();
         this.ctx.fillStyle = this.color
         this.ctx.arc(this.x, this.y, this.radius, 0, this.radians)
@@ -1716,15 +1732,16 @@ class landmineProjectile extends Projectile{
 // |---------|
 // Cell class 
 // |---------|
+
 class Cell {
-    constructor(i,j,size,color,game){
+    constructor(i,j,size,game){
         this.game = game;
         this.i = i;
         this.j = j;
         this.x = i * size;
         this.y = j * size;
         this.size = size;
-        this.color = color;
+        this.color = this.game.selectedTheme.colors[2];
         this.ctx = game.ctx;
         this.walls = {
             top: true,
@@ -2046,7 +2063,7 @@ class landminePU extends PowerUp{
     }
 }
 const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU,shieldPU,landminePU]
-const POWER_UPS = [landminePU,movementSpeedPU]
+const POWER_UPS = POWER_UPS_ALL
 const powerUpSprites = {
     movementSpeedPU: loadImage('./assets/movementSpeedPU.png'),
     reloadSpeedPU: loadImage('./assets/reloadSpeedPU.png'),
