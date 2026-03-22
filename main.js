@@ -150,14 +150,20 @@ const CFG = {
         2: {
             speed: 1500,
             radius: 23,
-            lifeTime: 10,
-            gracePeriod: 0.3
+            lifeTime: 5,
+            gracePeriod: 0.1
         },
         3: {    
             speed: 500,
             radius: 3,
             lifeTime: 20,
-            gracePeriod: 0.2
+            gracePeriod: 0.05
+        },
+        4: {
+            speed: 0,
+            radius: 18,
+            lifeTime: 40,
+            gracePeriod: 1,
         }
     },
     // power up
@@ -659,7 +665,7 @@ class Game {
         }
     }
     setupControls(){     
-        this.canvas.addEventListener('keyup', (e) => {
+        document.addEventListener('keyup', (e) => {
             // e.preventDefault();
             this.controller.forEach(controller => {
                 if (e.key in controller){
@@ -668,7 +674,7 @@ class Game {
             })
 
         }) 
-        this.canvas.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', (e) => {
             // e.preventDefault();
             this.controller.forEach(controller => {
                 if (e.key in controller){
@@ -694,17 +700,17 @@ class Game {
                 const hit = this.collisionDetectionProjectiles(prj)
                 if (hit) 
                     break;
-                }
-                if (prj.midStep){
-                    this.players.forEach(player => {
-                        const tankCorners = this.getPlayerCorners(player)
-                        const tankAxes = this.getPlayerAxes(player)
-                        const voronoiAxis = this.getVoronoiAxis(tankCorners, prj)
-                        const hitAxes = [voronoiAxis, ...tankAxes]
-                        const collide = this.SATprj(prj, tankCorners, hitAxes)
-                    if (collide) prj.onPlayerHit(collide, player)
-                    })
-    }
+            }
+                // if (prj.midStep){
+                //     this.players.forEach(player => {
+                //         const tankCorners = this.getPlayerCorners(player)
+                //         const tankAxes = this.getPlayerAxes(player)
+                //         const voronoiAxis = this.getVoronoiAxis(tankCorners, prj)
+                //         const hitAxes = [voronoiAxis, ...tankAxes]
+                //         const collide = this.SATprj(prj, tankCorners, hitAxes)
+                //     if (collide) prj.onPlayerHit(collide, player)
+                //     })
+                // }
             prj.lifeTime -= dt;
             prj.gracePeriod -= dt;
             if (prj.lifeTime < 0){
@@ -947,7 +953,7 @@ class Game {
             const voronoiAxis = { x: distX / dist, y: distY / dist }
             const hitAxes = [voronoiAxis, ...tankAxes]
             const collide = this.SATprj(prj, tankCorners, hitAxes)
-            if(collide){
+            if(collide && prj.gracePeriod < 0){
                 prj.onPlayerHit(collide, player)
             }
         })
@@ -972,11 +978,16 @@ class Game {
     }
     prjPlayerCollision(collide, player, prj){
         let index = this.players.indexOf(player)
-        player.dead = true
-        this.controller.splice(index, 1)
-        this.playerDeathParticles(player)
-        this.shakeTime = this.shakeMaxTime
-        this.shakeStrength = this.maxShakeStrength
+        if (player.shieldHP <= 0){
+            player.dead = true
+            this.controller[index].dead = true
+            this.playerDeathParticles(player)
+            this.shakeTime = this.shakeMaxTime
+            this.shakeStrength = this.maxShakeStrength
+        }
+        else{ 
+            player.shieldHP--
+        }
     }
     playerDeathParticles(player){
         const x = player.x
@@ -1023,7 +1034,10 @@ class Game {
         return {axis: minAxes, overlap: minOverlap}
     }
     collisionDetectionProjectiles(prj){
-        let hit = false;
+        let hit = false
+        if(!prj.wallCollisions){
+            return hit;
+        }
         prj.neighborCells.forEach(cell => {
             cell.wallSegments.forEach(segs => {
                 const wallCorners = this.getWallCorners(segs)
@@ -1045,6 +1059,7 @@ class Game {
         if(control[player.controls.shoot] && player.coolDown > player.maxCoolDown && player.ammo.length > 0){
             switch (player.ammo[0]){
                 case 1:
+                    console.log("ff")
                     this.projectiles.push(new BaseProjectile(
                     player.x + (player.height / 2 + this.GCFG.projectiles[1].radius) * player.sin,
                     player.y - (player.height / 2 + this.GCFG.projectiles[1].radius) * player.cos,
@@ -1055,6 +1070,7 @@ class Game {
                     player.coolDown = 0;
                     break;
                 case 2:
+                    console.log("ff")
                     this.projectiles.push(new laserProjectile(
                     player.x + (player.height / 2 + this.GCFG.projectiles[2].radius) * player.sin,
                     player.y - (player.height / 2 + this.GCFG.projectiles[2].radius) * player.cos,
@@ -1068,6 +1084,7 @@ class Game {
                     player.coolDown = -0.6;
                     break;
                 case 3:
+                    console.log("ff")
                     for (let i = -25; i <= 25; i+=3){
                         const angleSin = Math.sin((player.angle + i) * this.radianRatio)
                         const angleCos = Math.cos((player.angle + i) * this.radianRatio)
@@ -1082,7 +1099,19 @@ class Game {
                     this.shotgunParticlesSpawn(player)
                     player.coolDown = -0.6;
                     break;
+                case 4:
+                    console.log("ff")
+                    this.projectiles.push(new landmineProjectile(
+                    player.x + (player.height / 2 + this.GCFG.projectiles[4].radius * 2) * player.sin,
+                    player.y - (player.height / 2 + this.GCFG.projectiles[4].radius * 2)  * player.cos,
+                    player.sin,
+                    player.cos,   
+                    4, 
+                    this ))
+                    player.coolDown = -0.3;
+                    break;
                 default:
+                    console.log("ff")
                     this.projectiles.push(new BaseProjectile(
                     player.x + (player.height / 2 + this.GCFG.projectiles[1].radius) * player.sin,
                     player.y - (player.height / 2 + this.GCFG.projectiles[1].radius) * player.cos,
@@ -1195,7 +1224,7 @@ class Game {
         this.players = this.players.filter(p => !p.dead)
         this.particles = this.particles.filter(p => !p.dead)
         this.powerUps = this.powerUps.filter(p => !p.dead)
-
+        this.controller  = this.controller.filter(c => !c.dead)
         // test lag 
         // for (let i = 1; i < 50_000_000; i++){
         //     let ab = 2+2
@@ -1383,7 +1412,7 @@ class Tank {
         this.ammo = new Array(this.magazine).fill(1);
         this.reloadTime = CFG.tankReloadTime;
         this.reload = 0;
-
+        this.shieldHP = 0;
         this.angle = 0;
         this.velocity = 0;
         this.maxVelocity = CFG.tankMaxVelocity;
@@ -1418,7 +1447,14 @@ class Tank {
             this.ctx.globalAlpha = 0.5;
         }
         this.ctx.drawImage(this.image, -this.width / 2, -this.height / 2 - CFG.tankBarrelHeight, this.width, this.height + CFG.tankBarrelHeight)
-        
+        if (this.shieldHP > 0){
+            this.ctx.strokeStyle = this.game.selectedTheme[2]
+            this.ctx.strokeWidth = 4
+            this.ctx.fillStyle = this.game.selectedTheme[2]
+            this.ctx.strokeRect(-this.width / 2 - 5, -this.height / 2 - 5, this.width + 10, this.height + 10)
+            this.ctx.globalAlpha = this.shieldHP / 6
+            this.ctx.fillRect(-this.width / 2 - 5, -this.height / 2 - 5, this.width + 10, this.height + 10)
+        }
         if (debug) {
             this.ctx.strokeStyle = '#FF00FF';
             this.ctx.lineWidth = 1;
@@ -1464,7 +1500,7 @@ class Tank {
         // this.cellsBool = false  
     }
     projectilesToCheck(){
-        this.projectilesCollision = this.game.projectiles.filter(prj => prj.cell[0] >= this.cell[0] - 1 && prj.cell[0] <= this.cell[0] + 1 && prj.cell[1] <= this.cell[1] + 1 && prj.cell[1] >= this.cell[1] - 1 && prj.gracePeriod <= 0)
+        this.projectilesCollision = this.game.projectiles.filter(prj => prj.cell[0] >= this.cell[0] - 1 && prj.cell[0] <= this.cell[0] + 1 && prj.cell[1] <= this.cell[1] + 1 && prj.cell[1] >= this.cell[1] - 1)
     }
     index(k,l){
         if (k < 0 || l < 0 || k >= this.game.mapCells || l >= this.game.mapCells){
@@ -1496,6 +1532,8 @@ class Projectile {
         this.lifeTime = cfg.lifeTime;
         this.dead = false;
         this.gracePeriod = cfg.gracePeriod;
+        this.wallCollisions = true;
+        this.currentCell()
     }
     drawProjectile(){
         this.ctx.save()
@@ -1551,6 +1589,7 @@ class Projectile {
         return true;
     }
     onPlayerHit(collide, player) {
+        if (this.dead || player.dead) return;
         this.game.prjPlayerCollision(collide, player, this)
         this.dead = true
     }
@@ -1564,11 +1603,14 @@ class laserProjectile extends Projectile {
     constructor(x, y, sin, cos, prjId, game) {
         super(x, y, sin, cos, prjId, game);
         this.midStep = true;
+        this.color = game.selectedTheme.colors[2];
+        this.wallCollisions = false;
     }
     onWallHit(collide, segs) { 
         return false;
     }
     onPlayerHit(collide, player) {
+        if (this.dead || player.dead) return;
         this.game.prjPlayerCollision(collide, player, this)
     }
     drawProjectile(){
@@ -1578,7 +1620,7 @@ class laserProjectile extends Projectile {
             this.ctx.shadowBlur = 20
             this.ctx.shadowOffsetX = 0
             this.ctx.shadowOffsetY = 0
-            this.game.particles.push(new Particle(this.x, this.y, this.radius, 0, 0.2, this.game))
+            this.game.particles.push(new Particle(this.x, this.y, this.radius, 500, 0.2, this.game))
         }
         this.ctx.beginPath();
         this.ctx.fillStyle = this.color
@@ -1594,7 +1636,7 @@ class laserProjectile extends Projectile {
 class shotgunProjectile extends Projectile {
     constructor(x, y, sin, cos, prjId, game) {
         super(x, y, sin, cos, prjId, game);
-        this.bounce = 1;
+        this.bounce = 2;
     }
     onWallHit(collide, segs) { 
         if(this.bounce === 0){
@@ -1606,6 +1648,7 @@ class shotgunProjectile extends Projectile {
         }
     }
     onPlayerHit(collide, player) {
+        if (this.dead || player.dead) return;
         this.game.prjPlayerCollision(collide, player, this)
         this.dead = true
     }
@@ -1616,7 +1659,7 @@ class shotgunProjectile extends Projectile {
             this.ctx.shadowBlur = 20
             this.ctx.shadowOffsetX = 0
             this.ctx.shadowOffsetY = 0
-            this.game.particles.push(new Particle(this.x, this.y, this.radius, 0, 0.2, this.game))
+            this.game.particles.push(new Particle(this.x, this.y, this.radius, 100, 0.1, this.game))
         }
         this.ctx.beginPath();
         this.ctx.fillStyle = this.color
@@ -1629,6 +1672,47 @@ class shotgunProjectile extends Projectile {
         this.ctx.restore()
     }   
 }
+class landmineProjectile extends Projectile{
+    constructor(x, y, sin, cos, prjId, game) {
+        super(x, y, sin, cos, prjId, game);
+        this.color = game.selectedTheme.colors[2];
+        this.wallCollisions = false;
+        this.image = loadImage('./assets/landmine.png')
+    }
+    onWallHit(collide, segs) { 
+        return false;
+    }
+    onPlayerHit(collide, player) {
+        if (this.dead || player.dead) return;
+        this.game.prjPlayerCollision(collide, player, this)
+        this.dead = true
+        this.game.playerDeathParticles(this)
+        this.game.shakeStrength += 20
+        this.game.shakeTime += 2
+    }
+    drawProjectile(){
+        this.ctx.save()
+        if (this.game.graphics){
+            this.ctx.shadowColor = this.color
+            this.ctx.shadowBlur = 20
+            this.ctx.shadowOffsetX = 0
+            this.ctx.shadowOffsetY = 0
+        }
+        this.ctx.drawImage(this.image, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2)
+    
+        if (debug){
+            this.ctx.fillStyle = '#ff0000aa'
+            this.ctx.fillRect(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2)
+            this.ctx.fillStyle = '#00ff00aa'
+            this.ctx.beginPath()   
+            this.ctx.arc(this.x, this.y, this.radius, 0, this.radians)
+            this.ctx.fill()
+        }
+        this.ctx.restore()
+    }   
+}
+
+
 // |---------|
 // Cell class 
 // |---------|
@@ -1658,12 +1742,6 @@ class Cell {
     drawWalls(ctx) { 
         ctx.save();
         ctx.fillStyle = this.color;
-        if (this.game.graphics){
-            ctx.shadowColor = this.game.selectedTheme.colors[2];
-            ctx.shadowBlur = 3;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-        }
         if (this.walls.top){
             ctx.fillRect(this.x, this.y, this.size , this.Thickness)
         }
@@ -1739,9 +1817,14 @@ class Cell {
         }
 }
 
+
+
+
+
 // |*********|
 // Particle class 
 // |*********|
+// somehow adding speed to the particles gives this cool exhaust effect? specifically in shotgun
 class Particle {
     constructor(x, y, radius, speed, lifetime, game){
         this.x = x;
@@ -1914,7 +1997,7 @@ class refreshPU extends PowerUp{
 class laserPU extends PowerUp{
     constructor(x, y, game) {
         super(x, y, game);
-        this.image = powerUpSprites.laserPU
+        this.image = powerUpSprites.laserPU;
     }
     onPickup(player) {
         player.ammo.unshift(2,2,2)
@@ -1935,23 +2018,44 @@ class ghostPU extends PowerUp{
 class shotgunPU extends PowerUp{
     constructor(x, y, game) {
         super(x, y, game);
-        this.image = powerUpSprites.shotgunPU
+        this.image = powerUpSprites.shotgunPU;
     }
     onPickup(player) {
         player.ammo.unshift(3)
         this.dead = true
     }
 }
-
-const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU]
-const POWER_UPS = POWER_UPS_ALL
+class shieldPU extends PowerUp{
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.image = powerUpSprites.shieldPU
+    }
+    onPickup(player) {
+        player.shieldHP = 3;
+        this.dead = true
+    }
+}
+class landminePU extends PowerUp{
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.image = powerUpSprites.landminePU;
+    }
+    onPickup(player) {
+        player.ammo.unshift(4)
+        this.dead = true
+    }
+}
+const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU,shieldPU,landminePU]
+const POWER_UPS = [landminePU,movementSpeedPU]
 const powerUpSprites = {
     movementSpeedPU: loadImage('./assets/movementSpeedPU.png'),
     reloadSpeedPU: loadImage('./assets/reloadSpeedPU.png'),
     refreshPU: loadImage('./assets/refreshPU.png'),
     laserPU: loadImage('./assets/laserPU.png'),
     ghostPU: loadImage('./assets/ghostPU.png'),
-    shotgunPU: loadImage('./assets/shotgunPU.png')
+    shotgunPU: loadImage('./assets/shotgunPU.png'),
+    shieldPU: loadImage('./assets/shieldPU.png'),
+    landminePU: loadImage('./assets/landminePU.png')
 }
 function loadImage(src){
     const img = new Image();
