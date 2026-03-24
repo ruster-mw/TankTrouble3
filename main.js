@@ -105,12 +105,12 @@ const Themes = [
         powerColor: '#b80000'
     },
     {
-        title: 'yellow',
+        title: 'Virus',
         tankSprites: ['./assets/PlayerOne.png', './assets/PlayerTwo.png', './assets/PlayerThree.png', './assets/PlayerFour.png'],
-        colors: ['#060602', '#ffffff', 'hsl(61, 100%, 50%)', 'hsl(61, 36%, 6%)', 'hsla(61, 100%, 10%, 0.50)'],
+        colors: ['hsl(306, 100%, 3%)', '#02e100', '#02e100', 'hsl(309, 87%, 6%)', 'hsla(306, 100%, 11%, 0.50)'],
         backgroundUrl: './assets/image.png',
-        explosionParticle: "#fbff004d",
-        powerColor: '#e5e902'
+        explosionParticle: "#1eff004d",
+        powerColor: '#15e902'
     }
 ]
 const CFG = {
@@ -1682,7 +1682,7 @@ class laserProjectile extends Projectile {
             this.ctx.shadowBlur = 20
             this.ctx.shadowOffsetX = 0
             this.ctx.shadowOffsetY = 0
-            this.game.particles.push(new Particle(this.x, this.y, this.radius, 500, 0.2, this.game))
+            this.game.particles.push(new Particle(this.x, this.y, this.radius - 3, 500, 0.2, this.game))
         }
         this.ctx.beginPath();
         this.ctx.fillStyle = this.color
@@ -2214,7 +2214,7 @@ class shrinkPU extends PowerUp {
     }
 }
 const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU,shieldPU,landminePU,explosivePU,jesterPU,shrinkPU]
-const POWER_UPS = [shrinkPU]
+const POWER_UPS = [laserPU,shotgunPU]
 const powerUpSprites = {
     movementSpeedPU: loadImage('./assets/movementSpeedPU.png'),
     reloadSpeedPU: loadImage('./assets/reloadSpeedPU.png'),
