@@ -858,7 +858,7 @@ here goes cosmetics code
 .player-name:focus{
     box-shadow: -2px 2px 0 2px var(--color3);
 }
-.back-button{
+.back-button, .pause-button{
     background-color: var(--color3);
     border: none;
     width: 100%;
@@ -872,7 +872,7 @@ here goes cosmetics code
     border: 2px solid var(--color3);
     transition: all 0.1s;
 }
-.back-button:hover{
+.back-button:hover,  .pause-button:hover{
     background-color: var(--color1);
     color: var(--color3);
 }
@@ -880,7 +880,9 @@ here goes cosmetics code
 .active{
     display: flex;
 }
-
+#gameCanvas:focus{
+    border: 3px solid var(--color3);
+}
 
 
 

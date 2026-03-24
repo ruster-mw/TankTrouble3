@@ -164,6 +164,11 @@ const CFG = {
             radius: 18,
             lifeTime: 40,
             gracePeriod: 1,
+        },5: {
+            radius: 12,
+            speed: 190,
+            lifeTime: 5,
+            gracePeriod: 0.1
         }
     },
     // power up
@@ -337,10 +342,11 @@ keybindInput.addEventListener('keydown', (e) => {
 const themeDivs = document.querySelectorAll('.theme-div')
 const themeSelectButton = document.querySelector('.theme-select-button')
 const root = document.querySelector(':root')
-let selectedTheme;
+let selectedTheme
+let defaultTheme = Themes[1]
 if (optionsConfig.rememberTheme) {
     if (!localStorage.getItem('themeName'))
-        selectedTheme = Themes[0]
+        selectedTheme = defaultTheme
     else 
         selectedTheme = Themes[localStorage.getItem('themeID')]
     localStorage.setItem('themeName', selectedTheme.title)
@@ -352,7 +358,7 @@ if (optionsConfig.rememberTheme) {
     }
     
 } else {
-    selectedTheme = Themes[0]
+    selectedTheme = defaultTheme
     loadTheme(selectedTheme)
 }
 themeDivs.forEach((theme, index) => {
@@ -388,7 +394,7 @@ themeDivs.forEach((them,index) => {
 
 themeSelectButton.addEventListener('click', () => {
     const selectedDiv = document.querySelector('.theme-div.selected-theme')
-    selectedTheme = Themes[Array.from(themeDivs).indexOf(selectedDiv)]
+    selectedTheme = selectedDiv ? Themes[Array.from(themeDivs).indexOf(selectedDiv)] : selectedTheme
     loadTheme(selectedTheme)
     if (optionsConfig.rememberTheme){
         localStorage.setItem('themeName',selectedTheme.title)
@@ -424,17 +430,27 @@ const canvas = document.querySelector('#gameCanvas')
 const ctx = canvas.getContext("2d")
 const backButton = document.querySelector(".back-button")
 const scoreboard = document.querySelector('.scoreboard')
+const pauseButton = document.querySelector('.pause-button')
 let playerAmount = 4;
 let gameMode = "classic";
 let mapType = "medium";
 let debug = false;
+
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Home'){
         debug = !debug
         console.log(debug)
     }
 })
-
+canvas.addEventListener('blur', () => {
+    if (game){
+        game.controller.forEach(controll => {
+            Object.keys(controll).forEach((key, index) => {
+                controll[key] = false
+            });
+        })
+    }
+})
 playAmountDiv.addEventListener('click',(e) => {
     const item = e.target.closest('.play-config');
     if (!item) 
@@ -494,7 +510,12 @@ playMapDiv.addEventListener('click',(e) => {
 
 
 
-
+pauseButton.addEventListener('click', () => {
+    if (game){
+        game.gamePaused = !game.gamePaused;
+        pauseButton.innerText = pauseButton.innerText === "Pause" ? "Unpause" : "Pause"
+    }
+})
 backButton.addEventListener('click', () => {
     main.classList.remove('hidden')
     aside.classList.remove('hidden')
@@ -525,6 +546,7 @@ startButton.addEventListener('mouseout', () => {
         button.classList.remove('play-config-selected-style')
     })
 })
+
 let game;
 function startGame() {
     let graphics = optionsConfig.graphics
@@ -575,7 +597,7 @@ class Game {
         this.color3 = this.selectedTheme.colors[2];
         this.color4 = this.selectedTheme.colors[3];
         this.color5 = this.selectedTheme.colors[4];
-        
+        this.gamePaused = false;
         this.mapSizes = new Map([
             ["small", 7],
             ["medium", 9],
@@ -629,7 +651,6 @@ class Game {
         this.controller = [];
         this.playersScore = new Array(4).fill(0)
         this.generateScoreboard();
-        console.log(selectedTheme)
         this.generateMaze();
         this.spawnPlayers();
         this.setupController();
@@ -686,7 +707,7 @@ class Game {
         }
     }
     setupControls(){     
-        document.addEventListener('keyup', (e) => {
+        this.canvas.addEventListener('keyup', (e) => {
             // e.preventDefault();
             this.controller.forEach(controller => {
                 if (e.key in controller){
@@ -695,7 +716,7 @@ class Game {
             })
 
         }) 
-        document.addEventListener('keydown', (e) => {
+        this.canvas.addEventListener('keydown', (e) => {
             // e.preventDefault();
             this.controller.forEach(controller => {
                 if (e.key in controller){
@@ -1004,15 +1025,18 @@ class Game {
     prjPlayerCollision(collide, player, prj){
         let index = this.players.indexOf(player)
         if (player.shieldHP <= 0){
-            player.dead = true
-            this.controller[index].dead = true
-            this.playerDeathParticles(player)
-            this.shakeTime = this.shakeMaxTime
-            this.shakeStrength = this.maxShakeStrength
+            this.killPlayer(player,index)
         }
         else{ 
             player.shieldHP--
         }
+    }
+    killPlayer(player,index){
+        player.dead = true
+        this.controller[index].dead = true
+        this.playerDeathParticles(player)
+        this.shakeTime = this.shakeMaxTime
+        this.shakeStrength = this.maxShakeStrength
     }
     playerDeathParticles(player){
         const x = player.x
@@ -1135,6 +1159,17 @@ class Game {
                     this ))
                     player.coolDown = -0.3;
                     break;
+                 case 5:
+                    this.projectiles.push(new explosiveProjectile(
+                    player.x + (player.height / 2 + this.GCFG.projectiles[5].radius) * player.sin,
+                    player.y - (player.height / 2 + this.GCFG.projectiles[5].radius) * player.cos,
+                    player.sin,
+                    player.cos,
+                    5,
+                    this
+                    ));
+                    player.coolDown = 0;
+                    break;
                 default:
                     console.log("ff")
                     this.projectiles.push(new BaseProjectile(
@@ -1208,6 +1243,7 @@ class Game {
     // | '--------------' || '--------------' || '--------------' || '--------------' | | '--------------' || '--------------' || '--------------' || '--------------' |
     //  '----------------'  '----------------'  '----------------'  '----------------'   '----------------'  '----------------'  '----------------'  '----------------' 
     gameLoop(timeStamp = 0) {
+        if (!this.gamePaused){
         if (this.oldTimeStamp === 0) {
             this.oldTimeStamp = timeStamp;
         }
@@ -1263,6 +1299,7 @@ class Game {
                 this.newRound()
             }, this.GCFG.newRoundTime)
         }
+    }
         if (this.gameRunning){
             window.requestAnimationFrame((ts) => this.gameLoop(ts)); // ts pmo fr vro
         }
@@ -1732,8 +1769,73 @@ class landmineProjectile extends Projectile{
         this.ctx.restore()
     }   
 }
+class explosiveProjectile extends Projectile {
+    constructor(x, y, sin, cos, prjId, game) {
+        super(x, y, sin, cos, prjId, game);
+        this.explosionRadius = 70;
+    }
 
+    explode() {
+        const fragments = 24;
+        const angleStep = 360 / fragments
 
+        for (let i = 0; i < fragments; i++) {
+            const angle = i * angleStep;
+            const sin = Math.sin(angle * this.game.radianRatio)
+            const cos = Math.cos(angle * this.game.radianRatio)
+
+            this.game.projectiles.push(
+                new fragmentProjectile(this.x, this.y, sin, cos, this.game)
+            )
+            console.log(this.game.projectiles)
+        }
+        if (this.game.graphics){
+            for (let i = 0; i < 15; i++) {
+                this.game.particles.push(
+                    new Particle(this.x, this.y, 4, 300, 0.4, this.game)
+                )
+            }
+        }
+        this.dead = true;
+        }
+
+    onWallHit(collide, segs) {
+        this.explode();
+        return true;
+    }
+
+    onPlayerHit(collide, player) {
+        this.explode();
+    }
+}
+class fragmentProjectile extends Projectile {
+    constructor(x, y, sin, cos, game) {
+        super(x, y, sin, cos, 1, game);
+        this.radius = 2;
+        this.speed = 400;
+        this.vx = this.speed * sin;
+        this.vy = -this.speed * cos;
+        this.lifeTime = 0.6;
+        this.bounce = 1;
+        this.color = game.selectedTheme.colors[2];
+    }
+
+    onWallHit(collide, segs) {
+        if(this.bounce === 0){
+            this.dead = true
+        } else {
+            this.bounce--
+            this.game.prjWallCollision(collide, this, segs)
+            return true;
+        }
+    }
+
+    onPlayerHit(collide, player) {
+        if (this.dead || player.dead) return;
+        this.game.prjPlayerCollision(collide, player, this);
+        this.dead = true;
+    }
+}
 // |---------|
 // Cell class 
 // |---------|
@@ -2067,8 +2169,48 @@ class landminePU extends PowerUp{
         this.dead = true
     }
 }
-const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU,shieldPU,landminePU]
-const POWER_UPS = POWER_UPS_ALL
+class explosivePU extends PowerUp {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.image = powerUpSprites.explosivePU;
+    }
+
+    onPickup(player) {
+        player.ammo.unshift(5, 5);
+        this.dead = true;
+    }
+}
+class jesterPU extends PowerUp {
+       constructor(x, y, game) {
+        super(x, y, game);
+        this.image = powerUpSprites.jesterPU
+    }
+    onPickup(player) {
+        let x = 0
+        let unluckyInd;
+        while (x < 0.5){
+            unluckyInd = Math.floor(Math.random() * this.game.players.length) 
+            x = Math.random()
+        }
+        this.game.killPlayer(this.game.players[unluckyInd], unluckyInd)
+        this.dead = true
+    }
+}
+class shrinkPU extends PowerUp {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.image = powerUpSprites.shrinkPU
+    }
+    onPickup(player) {
+        player.width *= 0.5
+        player.height *= 0.4
+        player.maxVelocity *= 1.3
+        setTimeout(() => {player.width /= 0.5; player.height /= 0.4;player.maxVelocity /= 1.3}, 10000)
+        this.dead = true
+    }
+}
+const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU,shieldPU,landminePU,explosivePU,jesterPU,shrinkPU]
+const POWER_UPS = [shrinkPU]
 const powerUpSprites = {
     movementSpeedPU: loadImage('./assets/movementSpeedPU.png'),
     reloadSpeedPU: loadImage('./assets/reloadSpeedPU.png'),
@@ -2077,7 +2219,10 @@ const powerUpSprites = {
     ghostPU: loadImage('./assets/ghostPU.png'),
     shotgunPU: loadImage('./assets/shotgunPU.png'),
     shieldPU: loadImage('./assets/shieldPU.png'),
-    landminePU: loadImage('./assets/landminePU.png')
+    landminePU: loadImage('./assets/landminePU.png'),
+    explosivePU: loadImage('./assets/explosivePU.png'),
+    jesterPU: loadImage('./assets/jesterPU.png'),
+    shrinkPU: loadImage('./assets/shrinkPU.png'),
 }
 function loadImage(src){
     const img = new Image();
