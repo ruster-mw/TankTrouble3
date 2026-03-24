@@ -534,8 +534,8 @@ function startGame() {
 // window.addEventListener('resize',canvasSize)
 function canvasSize() {
     if (window.innerWidth > 1920){
-    canvas.width = 1300
-    canvas.height = 1300    
+    canvas.width = 1200
+    canvas.height = 1200    
     } else {
     canvas.width = 900
     canvas.height = 900
