@@ -85,28 +85,32 @@ const Themes = [
         tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
         colors: ['hsl(240, 60%, 3%)', '#ffffff', '#00ffff', '#090913', '#00ffff80'],
         backgroundUrl: './assets/image.png',
-        explosionParticle: "#00ffff4d"
+        explosionParticle: "#00ffff4d",
+        powerColor: '#00dddd'
     },
     {
         title: 'retro',
         tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
         colors: ['#e7e7e7', '#030303', '#070707', '#c7c7c7', '#07070780'],
         backgroundUrl: './assets/image.png',
-        explosionParticle: "#0000004d"
+        explosionParticle: "#0000004d",
+        powerColor: '#080808'
     },
     {
         title: 'hell',
         tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
         colors: ['#060202', '#ff0000', '#ff0000', '#130909', '#ff000080'],
         backgroundUrl: './assets/image.png',
-        explosionParticle: "#ff00004d"
+        explosionParticle: "#ff00004d",
+        powerColor: '#b80000'
     },
     {
         title: 'yellow',
         tankSprites: ['./assets/PlayerOne.png', './assets/PlayerTwo.png', './assets/PlayerThree.png', './assets/PlayerFour.png'],
         colors: ['#060602', '#ffffff', 'hsl(61, 100%, 50%)', 'hsl(61, 36%, 6%)', 'hsla(61, 100%, 10%, 0.50)'],
         backgroundUrl: './assets/image.png',
-        explosionParticle: "#fbff004d"
+        explosionParticle: "#fbff004d",
+        powerColor: '#e5e902'
     }
 ]
 const CFG = {
@@ -917,7 +921,7 @@ class Game {
 
         // get which velocity to cancel
         const moveDirection = {x: player.sin, y: -player.cos}
-        const velocity = (moveDirection.x * axis.x + moveDirection.y * axis.y)
+        const velocity = (moveDirection.x * axis.x + moveDirection.y * axis.y) * player.velocity
 
         if (velocity < 0){
             if (this.gameMode == "kachow") {
@@ -2063,7 +2067,7 @@ class PowerUp {
             this.ctx.shadowOffsetX = 0
             this.ctx.shadowOffsetY = 0
         }
-        this.ctx.fillStyle = this.game.selectedTheme.colors[2]
+        this.ctx.fillStyle = this.game.selectedTheme.powerColor
         this.ctx.fillRect(this.x, this.y, this.size, this.size)
         this.ctx.drawImage(this.image, this.x, this.y, this.size, this.size)
         this.ctx.strokeStyle = this.game.selectedTheme.colors[1]
