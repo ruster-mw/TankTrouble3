@@ -1,7 +1,4 @@
-// hello traveler , im sure you have your reasons as to why you are looking down here
-// maybe to learn, inspire or just laugh at my code,
-// but i must warn you first, while i started this project only I knew what was the vision behind my code
-// now that i finished it, i know that only God knows what this code does. So good luck 👍
+// If you have any questions regarding the code pls conntact me nowhere
 
 
 
@@ -106,7 +103,7 @@ const Themes = [
     },
     {
         title: 'Virus',
-        tankSprites: ['./assets/PlayerOne.png', './assets/PlayerTwo.png', './assets/PlayerThree.png', './assets/PlayerFour.png'],
+        tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
         colors: ['hsl(306, 100%, 3%)', '#02e100', '#02e100', 'hsl(309, 87%, 6%)', 'hsla(306, 100%, 11%, 0.50)'],
         backgroundUrl: './assets/image.png',
         explosionParticle: "#1eff004d",
@@ -559,13 +556,8 @@ function startGame() {
 
 // window.addEventListener('resize',canvasSize)
 function canvasSize() {
-    if (window.innerWidth > 1920){
-    canvas.width = 1200
-    canvas.height = 1200    
-    } else {
     canvas.width = 900
     canvas.height = 900
-    }
 }
 
 
