@@ -2206,7 +2206,7 @@ class shrinkPU extends PowerUp {
     }
 }
 const POWER_UPS_ALL = [movementSpeedPU,reloadSpeedPU,refreshPU,laserPU,ghostPU,shotgunPU,shieldPU,landminePU,explosivePU,jesterPU,shrinkPU]
-const POWER_UPS = [laserPU,shotgunPU]
+const POWER_UPS =  POWER_UPS_ALL
 const powerUpSprites = {
     movementSpeedPU: loadImage('./assets/movementSpeedPU.png'),
     reloadSpeedPU: loadImage('./assets/reloadSpeedPU.png'),
