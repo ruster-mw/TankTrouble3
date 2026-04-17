@@ -76,36 +76,36 @@ const Controls = [
         shoot: '4'
     }
 ]
-const Themes = [
+// ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png']
+// ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png']
+// ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png']
+// ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png']
+let Themes = [
     {
         title: 'classic',
-        tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
+        tankSprites: 'Retro',
         colors: ['hsl(240, 60%, 3%)', '#ffffff', '#00ffff', '#090913', '#00ffff80'],
-        backgroundUrl: './assets/image.png',
         explosionParticle: "#00ffff4d",
         powerColor: '#00dddd'
     },
     {
         title: 'retro',
-        tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
+        tankSprites: 'Retro',
         colors: ['#e7e7e7', '#030303', '#070707', '#c7c7c7', '#07070780'],
-        backgroundUrl: './assets/image.png',
         explosionParticle: "#0000004d",
         powerColor: '#080808'
     },
     {
         title: 'hell',
-        tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
+        tankSprites: 'Retro',
         colors: ['#060202', '#ff0000', '#ff0000', '#130909', '#ff000080'],
-        backgroundUrl: './assets/image.png',
         explosionParticle: "#ff00004d",
         powerColor: '#b80000'
     },
     {
         title: 'Virus',
-        tankSprites: ['./assets/RetroP1.png', './assets/RetroP2.png', './assets/RetroP3.png', './assets/RetroP4.png'],
-        colors: ['hsl(306, 100%, 3%)', '#02e100', '#02e100', 'hsl(309, 87%, 6%)', 'hsla(306, 100%, 11%, 0.50)'],
-        backgroundUrl: './assets/image.png',
+        tankSprites: 'Retro',
+        colors: ['hsl(310, 100%, 3%)', '#02e100', '#02e100', 'hsl(309, 87%, 6%)', 'hsla(306, 100%, 11%, 0.50)'],
         explosionParticle: "#1eff004d",
         powerColor: '#15e902'
     }
@@ -195,6 +195,35 @@ barButtons.forEach(button => {
         })
     })
 })  
+
+//-------------
+// login
+//-------------
+if (document.querySelector('.login-section')) {
+const loginPasswordToggle = document.querySelector('.login-toggle-visibility')
+const signupPasswordToggle = document.querySelector('.signup-toggle-visibility')
+const loginPassword = document.querySelector('.login-password')
+const signupPassword = document.querySelector('.signup-password')
+loginPasswordToggle.addEventListener('click', () => {
+    if (loginPassword.type === "password"){
+        loginPassword.type = "text"
+        loginPasswordToggle.firstElementChild.setAttribute('class','fa-solid fa-eye')
+    } else {
+        loginPassword.type = "password"
+        loginPasswordToggle.firstElementChild.setAttribute('class','fa-solid fa-eye-slash')
+    }
+})
+signupPasswordToggle.addEventListener('click', () => {
+    if (signupPassword.type === "password"){
+        signupPassword.type = "text"
+        signupPasswordToggle.firstElementChild.setAttribute('class','fa-solid fa-eye')
+    } else {
+        signupPassword.type = "password"
+        signupPasswordToggle.firstElementChild.setAttribute('class','fa-solid fa-eye-slash')
+    }
+})
+}
+
 
 //-------------
 // settings
@@ -332,79 +361,121 @@ keybindInput.addEventListener('keydown', (e) => {
     localStorage.setItem('keyBinds', JSON.stringify(Controls))
 })
 
+//-------------
+// profile popup
+//-------------
+if (document.querySelector('.edit-profile')){
+const editUsernamePopup = document.getElementById('edit-username-popup')
+const editProfileButton = document.querySelector('.edit-profile')
+const popupCloseBtn = document.querySelector('.popup-close-btn')
+const usernameForm = document.querySelector('.username-form')
+const newUsernameInput = document.getElementById('new-username')
+const usernamePasswordInput = document.getElementById('username-password')
+
+editProfileButton.addEventListener('click', () => {
+    editUsernamePopup.classList.add('active')
+    newUsernameInput.focus()
+})
+
+popupCloseBtn.addEventListener('click', () => {
+    editUsernamePopup.classList.remove('active')
+    usernameForm.reset()
+})
 
 
+editUsernamePopup.addEventListener('click', (e) => {
+    if (e.target === editUsernamePopup) {
+        editUsernamePopup.classList.remove('active')
+        usernameForm.reset()
+    }
+})
+}
 
 //-------------
 // cosmetics
 //-------------
-// TODO make the cosmetics load in with php? or js idk
 
-const themeDivs = document.querySelectorAll('.theme-div')
-const themeSelectButton = document.querySelector('.theme-select-button')
-const root = document.querySelector(':root')
-let selectedTheme
-let defaultTheme = Themes[1]
-if (optionsConfig.rememberTheme) {
-    if (!localStorage.getItem('themeName'))
-        selectedTheme = defaultTheme
-    else 
-        selectedTheme = Themes[localStorage.getItem('themeID')]
-    localStorage.setItem('themeName', selectedTheme.title)
-    localStorage.setItem('themeID', Themes.indexOf(selectedTheme))
-    try {
-        loadTheme(selectedTheme)
-    } catch {
-        console.error("failed to load in theme")
-    }
-    
-} else {
-    selectedTheme = defaultTheme
-    loadTheme(selectedTheme)
-}
-themeDivs.forEach((theme, index) => {
-    const themeSprites = theme.querySelectorAll('.theme-tank-sprite')
-    const themeColors = theme.querySelectorAll('.theme-color')
-    const header = theme.querySelector('h3')
-    const currentTheme = Themes[index]
-
-    header.textContent = currentTheme.title
-    themeSprites.forEach((sprite, ind) => {
-        sprite.src = currentTheme.tankSprites[ind]
-    })
-    themeColors.forEach((color,ind) => {
-        color.style.backgroundColor = currentTheme.colors[ind]
-    })
-
-})
-themeDivs.forEach((them,index) => {
-    them.addEventListener('click', (e) => {
-        themeDivs.forEach((th,ind) => {
-            if(th.dataset.theme == e.target.closest('.theme-div').dataset.theme){
-                th.classList.add('selected-theme')
-            } else {
-                th.classList.remove('selected-theme')
-            }
+function createThemeDivs() {
+    const themeWrapper = document.querySelector('.theme-wrapper')
+    themeWrapper.innerHTML = ''
+    Themes.forEach((theme) => {
+        const themeDiv = document.createElement('div')
+        themeDiv.className = 'theme-div'
+        themeDiv.dataset.theme = theme.title
+        const header = document.createElement('h3')
+        header.className = 'theme-header'
+        header.textContent = theme.title
+        const spritesContainer = document.createElement('div')
+        spritesContainer.className = 'theme-tank-sprites'
+        for (let i = 4; i > 0; i--){
+            const spriteImg = document.createElement('img')
+            spriteImg.src = `./assets/${theme.tankSprites}P${i}.png`
+            spriteImg.alt = 'tank sprite'
+            spriteImg.className = 'theme-tank-sprite'
+            spritesContainer.appendChild(spriteImg)
+        }
+        const paletteContainer = document.createElement('div')
+        paletteContainer.className = 'theme-palette-div'
+        
+        theme.colors.forEach((color) => {
+            const colorDiv = document.createElement('div')
+            colorDiv.className = 'theme-color'
+            colorDiv.style.backgroundColor = color
+            paletteContainer.appendChild(colorDiv)
         })
         
+        themeDiv.appendChild(header)
+        themeDiv.appendChild(spritesContainer)
+        themeDiv.appendChild(paletteContainer)
+        themeWrapper.appendChild(themeDiv)
     })
-})
+}
 
+// createThemeDivs()
 
+function setupThemeListeners() {
+    let themeDivs = document.querySelectorAll('.theme-div')
+    
+    themeDivs.forEach((them) => {
+        them.addEventListener('click', (e) => {
+            themeDivs.forEach((th) => {
+                if(th.dataset.theme == e.target.closest('.theme-div').dataset.theme){
+                    th.classList.add('selected-theme')
+                } else {
+                    th.classList.remove('selected-theme')
+                }
+            })
+        })
+    })
+}
 
+setupThemeListeners()
 
-themeSelectButton.addEventListener('click', () => {
-    const selectedDiv = document.querySelector('.theme-div.selected-theme')
-    selectedTheme = selectedDiv ? Themes[Array.from(themeDivs).indexOf(selectedDiv)] : selectedTheme
-    loadTheme(selectedTheme)
-    if (optionsConfig.rememberTheme){
-        localStorage.setItem('themeName',selectedTheme.title)
-        localStorage.setItem('themeID', Themes.indexOf(selectedTheme))
-    }
-})
+function setupThemeSelectButton() {
+    const themeSelectButton = document.querySelector('.theme-select-button')
+    const themeDivs = document.querySelectorAll('.theme-div')
+    const root = document.querySelector(':root')
+    
+    const newButton = themeSelectButton.cloneNode(true)
+    themeSelectButton.parentNode.replaceChild(newButton, themeSelectButton)
+    
+    newButton.addEventListener('click', () => {
+        const selectedDiv = document.querySelector('.theme-div.selected-theme')
+        selectedTheme = selectedDiv ? Themes[Array.from(themeDivs).indexOf(selectedDiv)] : selectedTheme
+        loadTheme(selectedTheme)
+        if (optionsConfig.rememberTheme){
+            localStorage.setItem('themeName',selectedTheme.title)
+            localStorage.setItem('themeID', Themes.indexOf(selectedTheme))
+        }
+    })
+}
 
+setupThemeSelectButton()
 
 function loadTheme(theme){
+    const root = document.querySelector(':root')
+    const themeDivs = document.querySelectorAll('.theme-div')
+    
     themeDivs.forEach(th => {
         if(th.dataset.theme == theme.title){
             th.classList.remove('selected-theme')
@@ -416,7 +487,52 @@ function loadTheme(theme){
     root.style.setProperty('--color4', theme.colors[3])
     root.style.setProperty('--color5', theme.colors[4])
 }
+async function getThemes() {
+  try {
+    const response = await fetch(`api/themes`)
+    if (!response.ok) 
+        if (response.status === 404)
+            // window.location.href = '404.php'
+            console.error('someting went wrong')
+        else
+            throw new Error(`HTTP error: ${response.status}`)
 
+    const data = await response.json()
+    return data;
+   } catch (err) {
+    console.error('Failed to fetch:', err)
+   }
+}
+let selectedTheme = Themes[1]; 
+getThemes().then(fetchedThemes => {
+    if (fetchedThemes){
+        Themes = fetchedThemes
+        createThemeDivs()
+        setupThemeListeners()
+        setupThemeSelectButton()
+        
+        const themeDivs = document.querySelectorAll('.theme-div')
+        const root = document.querySelector(':root')
+        let defaultTheme = Themes[1]
+        if (optionsConfig.rememberTheme) {
+        if (!localStorage.getItem('themeName'))
+        selectedTheme = defaultTheme
+    else 
+        selectedTheme = Themes[localStorage.getItem('themeID')]
+        localStorage.setItem('themeName', selectedTheme.title)
+        localStorage.setItem('themeID', Themes.indexOf(selectedTheme))
+        try {
+            loadTheme(selectedTheme)
+        } catch {
+            console.error("failed to load in theme")
+        }
+    
+} else {
+    selectedTheme = defaultTheme
+    loadTheme(selectedTheme)
+}
+    }
+})
 //-------------
 // play js
 //-------------
@@ -606,7 +722,7 @@ class Game {
         this.offCtx = this.offScreenCanvas.getContext('2d');
         this.redraw = true
 
-        this.GCFG = [];
+        this.GCFG = {};
         Object.assign(this.GCFG, CFG)
         if (this.gameMode == "kachow"){
             this.GCFG.tankMaxVelocity *= 2;
@@ -633,7 +749,6 @@ class Game {
         this.powerUpMaxCoolDown = this.GCFG.pwrupCooldown;
         this.powerUpCooldown = 6;
 
-        // maze vars
         this.mapCells = this.mapSizes.get(mapType);
         this.cells = [];
         this.cellSize = this.width / this.mapCells;
@@ -642,10 +757,11 @@ class Game {
         this.upgradeChance = this.mapSizes.get(mapType);
         this.wallThickness = this.GCFG.wallThickness
 
-        //player stuff
         this.players = [];
         this.controller = [];
         this.playersScore = new Array(4).fill(0)
+        this.playTime = 0;
+
         this.generateScoreboard();
         this.generateMaze();
         this.spawnPlayers();
@@ -662,7 +778,7 @@ class Game {
             playerScore.className = "player-score"
             playerScore.dataset.player = i
             const img = document.createElement("img")
-            img.src = this.selectedTheme.tankSprites[i]
+            img.src = `./assets/${selectedTheme.tankSprites}P${i+1}.png`
             img.alt = "Player " + (i + 1)
 
             const scoreText = document.createElement("div")
@@ -698,7 +814,7 @@ class Game {
         for (let i = 0; i < this.playerAmount; i++){
             let cellX = this.cells[Math.floor(Math.random() * this.mapCells * this.mapCells)].x + this.cellSize / 2
             let cellY = this.cells[Math.floor(Math.random() * this.mapCells)].y + this.cellSize / 2
-            let player = new Tank(cellX, cellY, selectedTheme.tankSprites[i], Controls[i], this, i)
+            let player = new Tank(cellX, cellY, `./assets/${selectedTheme.tankSprites}P${i+1}.png`, Controls[i], this, i)
             this.players.push(player) 
         }
     }
@@ -1243,7 +1359,7 @@ class Game {
         if (this.oldTimeStamp === 0) {
             this.oldTimeStamp = timeStamp;
         }
-        this.secondsPassed = (timeStamp - this.oldTimeStamp) / 1000;
+        this.secondsPassed = (timeStamp - this.oldTimeStamp) / 1000
         this.oldTimeStamp = timeStamp;
         ctx.clearRect(0, 0, this.width, this.height)
         ctx.save()
@@ -1282,6 +1398,8 @@ class Game {
         this.particles = this.particles.filter(p => !p.dead)
         this.powerUps = this.powerUps.filter(p => !p.dead)
         this.controller  = this.controller.filter(c => !c.dead)
+        this.playTime += this.secondsPassed
+        // this.playTime = Math.ceil(this.playtime)
         // test lag 
         // for (let i = 1; i < 50_000_000; i++){
         //     let ab = 2+2
@@ -1291,6 +1409,7 @@ class Game {
             this.playersScore[this.players[0].ind]++
             this.updateScores()
             this.roundOver = true
+            this.updatePlayerStats()
             setTimeout(() => {
                 this.newRound()
             }, this.GCFG.newRoundTime)
@@ -1299,6 +1418,22 @@ class Game {
         if (this.gameRunning){
             window.requestAnimationFrame((ts) => this.gameLoop(ts)); // ts pmo fr vro
         }
+    }
+    async updatePlayerStats(){
+        const newUser = {
+            playtime: this.playTime,
+            games: 1
+        }
+        console.log(newUser)
+        const response = await fetch('api/update_stats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newUser)
+        })
+        const data = await response.json();
+        console.log(data);
     }
     newRound() {
         this.projectiles = []
@@ -1456,8 +1591,7 @@ class Tank {
         this.cfg = game.GCFG;
         this.width = this.cfg.tankWidth;
         this.height = this.cfg.tankHeight;
-        this.image = new Image();
-        this.image.src = this.sprite;
+        this.image = loadImage(this.sprite)
         // get the corners when rotates useful for collision :)
         this.corners = [
             {x: -this.width / 2, y: -this.height / 2},
@@ -1783,7 +1917,6 @@ class explosiveProjectile extends Projectile {
             this.game.projectiles.push(
                 new fragmentProjectile(this.x, this.y, sin, cos, this.game)
             )
-            console.log(this.game.projectiles)
         }
         if (this.game.graphics){
             for (let i = 0; i < 15; i++) {
@@ -2100,7 +2233,6 @@ class refreshPU extends PowerUp{
     onPickup(player) {
         const xCoord = this.game.players.map((coord) => coord.x)
         const yCoord = this.game.players.map((coord) => coord.y)
-        console.log(xCoord, yCoord)
         
         this.game.players.forEach((player, index) => {
             if (index < this.game.players.length - 1){

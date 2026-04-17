@@ -1,76 +1,30 @@
-<!-- <?php 
+<?php 
     ini_set('session.use_only_cookies', 1);
     session_start();
-    if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true){
-    } else {
-    }
-    $server = 'localhost';
-    $user = 'root';
-    $pass = '';
-    $baza = 'panzer_arger_accounts'; 
-
-    mysqli_report(MYSQLI_REPORT_OFF);
-    $db = @new mysqli($server, $user, $pass, $baza);
-
-    if ($db->connect_error){
-        die('blad polaczania z baza: '.$db->connect_error);
-    }
-    if(isset($_POST['request'])){
-        login($db);
-        header("Location: ".$_SERVER['PHP_SELF']); 
-        exit;
-    } else if(isset($_POST['logout'])){
-        session_unset();
-        session_destroy();
-        header("Location: ".$_SERVER['PHP_SELF']); 
-        exit;
-    }
-
-
-
-
-    function register($db){
-        $username = !empty($_POST['username']) ? htmlspecialchars(trim($_POST['username'])) : false;
-        $password = !empty($_POST['password']) ? password_hash(trim($_POST['password']), PASSWORD_DEFAULT) : false;
-        
-        if($username && $password) {
-            $check = $db->prepare("SELECT username FROM accounts WHERE username = ?");
-            $check->bind_param("s", $username);
-            $check->execute();
-            $check->store_result();
-
-            if($check->num_rows > 0){
-                return;
-            }
-       
-            $sql = "INSERT INTO `accounts`(`username`, `password`) VALUES (?, ?)";
-            $stmt = $db->prepare($sql);
-            $stmt->bind_param("ss", $username, $password);
-            $stmt->execute();
     
-        }
-    }
-    function login($db){
-        $username = !empty($_POST['username']) ? htmlspecialchars(trim($_POST['username'])) : false;
-        $password = !empty($_POST['password']) ? trim($_POST['password']) : false;
-        $hashed_password = '';
-        if($username && $password){
-            $sql = "SELECT password FROM `accounts` WHERE username = ?";
+    $db = require_once 'database.php';
+    if (!isset($_SESSION['logged_in'])){
+        if (isset($_COOKIE['login_token'])) {
+            $token = $_COOKIE['login_token'];
+            $sql = "SELECT Id_u, username, role_id FROM `users` WHERE login_token = ?";
             $stmt = $db->prepare($sql);
-            $stmt->bind_param("s", $username);
+            $stmt->bind_param("s", $token);
             $stmt->execute();
-            $stmt->bind_result($hashed_password);
-            if($stmt->fetch()){
-                if(password_verify($password, $hashed_password)){
-                    $_SESSION['logged_in'] = true;
-                    $_SESSION['username']  = $username;
-                } 
+            $stmt->bind_result($user_id, $username, $role_name);
+            if ($stmt->fetch()) {
+                $_SESSION['logged_in'] = true;
+                $_SESSION['username']  = $username;
+                $_SESSION['user_id']   = $user_id;
+                $_SESSION['role_name']   = $role_name;
+            } else {
+                // echo "nie zalogowano";
             }
-
+            $stmt->close();
         }
+    } else {
+        // echo "zalogowany";
     }
- 
-?> -->
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -116,7 +70,6 @@
             <p>pls play the game in landscape mode🙏</p>
         </i>
     </div>    
-    <!-- <div class="main-aside"> -->
         <aside>
             <section class="bar">
                 <header>
@@ -127,9 +80,9 @@
                     <i class="fa-solid fa-play"></i>
                     <p>Play</p>
                 </button>
-                <button class="bar-button" data-type="LAN">
+                <button class="bar-button" data-type="account">
                     <i class="fa-duotone fa-solid fa-network-wired"></i>
-                    <p>LAN</p>
+                    <p>account</p>
                 </button>
                 <button class="bar-button" data-type="cosmetics">
                     <i class="fa-solid fa-paintbrush"></i>
@@ -147,7 +100,7 @@
             </section>
         </aside>
         <main>
-           <section class="menu active" id="play-menu" data-type="play">
+           <section class="menu" id="play-menu" data-type="play">
                 <div class="play-header">
                     <h2>Select Game Mode</h2>
                 </div>
@@ -175,117 +128,19 @@
                 <div id="start-div">
                     <button id="start-button">START</button>
                 </div>
-                <!-- <section id="play-amount-section" class="play-section play-active">
-                    <button class="play-setup-button" id="play-button1" data-amount='1'>
-                        <img src="./assets/player1.svg" alt="solo image" class="play-image">
-                        <p>1</p>
-                        <p>Player</p>
-                    </button>
-                    <button class="play-setup-button" id="play-button2" data-amount='2'>
-                        <img src="./assets/player2.svg" alt="2 players image" class="play-image">
-                        <p>2</p>
-                        <p>Players</p>
-                    </button>
-                    <button class="play-setup-button" id="play-button3" data-amount='3'>
-                        <img src="./assets/player3.svg" alt="3 players image" class="play-image">
-                        <p>3</p>
-                        <p>Players</p>
-                    </button>
-                    <button class="play-setup-button" id="play-button4" data-amount=4'>
-                        <img src="./assets/player4.svg" alt="4 players image" class="play-image">
-                        <p>4</p>
-                        <p>Players</p>
-                    </button>
-                </section>
-                <section id="play-mapsize-section" class="play-section">
-                    <button class="play-setup-button" data-mapSize='1'>
-                        <img src="./assets/player2.svg" alt="2 players image" class="play-image">
-                        <p>8x8</p>
-                        <p>Map size</p>
-                    </button>
-                    <button class="play-setup-button" data-mapSize='2'>
-                        <img src="./assets/player3.svg" alt="3 players image" class="play-image">
-                        <p>16x16</p>
-                        <p>Player</p>
-                    </button>
-                    <button class="play-setup-button" data-mapSize='3'>
-                        <img src="./assets/player4.svg" alt="4 players image" class="play-image">
-                        <p>24x24</p>
-                        <p>Player</p>
-                    </button>
-                </section> -->
+                
            </section>
-           <section class="menu" id="LAN-menu" data-type="LAN"></section>
-
-           <section class="menu" id="cosmetics-menu" data-type="cosmetics">
+           <section class="menu" id="account-menu" data-type="account">
+                 <?php 
+                    if(isset($_SESSION['logged_in'])){
+                        include 'profile.php';
+                    } else {
+                        include 'registry.php';
+                    }
+                ?> 
+           </section>
+           <section class="menu active" id="cosmetics-menu" data-type="cosmetics">
                 <div class="theme-wrapper">
-                    <div class="theme-div" data-theme="classic">
-                        <h3 class="theme-header">classic</h3>
-                        <div class="theme-tank-sprites">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                        </div>
-                        <div class="theme-palette-div">
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                        </div>
-        
-                    </div>
-                    <div class="theme-div" data-theme="retro">
-                        <h3 class="theme-header">classic</h3>
-                        <div class="theme-tank-sprites">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                        </div>
-                        <div class="theme-palette-div">
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                        </div>
-        
-                    </div>
-                    <div class="theme-div" data-theme="hell">
-                        <h3 class="theme-header">classic</h3>
-                        <div class="theme-tank-sprites">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                        </div>
-                        <div class="theme-palette-div">
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                        </div>
-                    </div>
-                    <div class="theme-div" data-theme="yellow">
-                        <h3 class="theme-header">classic</h3>
-                        <div class="theme-tank-sprites">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                            <img src="./assets/RetroP1.png" alt="tank sprite" class="theme-tank-sprite">
-                        </div>
-                        <div class="theme-palette-div">
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                            <div class="theme-color"></div>
-                        </div>
-        
-                    </div>
                 </div>
                 <button class="theme-select-button">apply</button>
            </section>
@@ -402,88 +257,75 @@
                                 </div>
                         </div>
                         <div class="settings" data-setting="credits">
-<div class="setting">
-    <div class="setting-name">director</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">director</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">producer</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">producer</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">screenwriter</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">screenwriter</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">cinematography</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">cinematography</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">editor</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">editor</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">music</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">music</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">production design</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">production design</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">costume design</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">costume design</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">sound design</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">sound design</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">visual effects</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">visual effects</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">starring</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">starring</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">casting</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">casting</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
-<div class="setting">
-    <div class="setting-name">executive producer</div>
-    <div class="setting-value">Mateusz Wypior</div>
-</div>
+                            <div class="setting">
+                                <div class="setting-name">executive producer</div>
+                                <div class="setting-value">Mateusz Wypior</div>
+                            </div>
 
                         </div>
-        
-        
-                <section class="login-section" style="display:none;">
-                    <div class="login-card">
-                        <h3>Log in</h3>
-                        <form action="index.php" method="post" class="login-form">
-                            <input type="text" id="username" name="username" required placeholder="Username" maxlength="16">
-                            <input type="password" id="password" name="password" required placeholder="password" maxlength="32">
-                            <input type="submit" id="request" name="request" value="Log in"></input>
-                            <input type="submit" id="request" name="logout" value="log out"></input>
-                        </form>
-                    </div>
-                </section>
            </section>
         </main>
-    <!-- </div> -->
+
 
 
     <script src="main.js"></script>
