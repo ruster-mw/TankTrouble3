@@ -2,8 +2,7 @@
 ini_set('session.use_only_cookies', 1);
 session_start();
 define('SPRITESSHETS', ['Retro','Neon']);
-if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true ||
-    !isset($_SESSION['role_name']) || !in_array($_SESSION['role_name'], ['admin', 'moderator'])) {
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || !isset($_SESSION['role_name']) || !in_array($_SESSION['role_name'], ['admin', 'moderator'])) {
     header("Location: adminlogin.php");
     exit;
 }
@@ -22,7 +21,6 @@ function redirect($url) {
     exit();
 }
 
-
 // function call_api(string $method, string $url, array $body = []): array {
 //     $ch = curl_init($url);
 
@@ -40,10 +38,6 @@ function redirect($url) {
 
 //     return ['status' => $status, 'data' => json_decode($response, true)];
 // }
-
-
-
-
 
 if (isset($_GET['delete_id'])) {
     try {
@@ -181,7 +175,6 @@ if ( isset($_POST['delete-theme']) ) {
     }
 }
 
-
 if (isset($_GET['delete_theme_id'])) {
     try {
         $theme_object->delete(intval($_GET['delete_theme_id'])); 
@@ -194,8 +187,6 @@ if (isset($_GET['delete_theme_id'])) {
 }
 
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -206,13 +197,10 @@ if (isset($_GET['delete_theme_id'])) {
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="admin.css">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" type="text/css">
 </head>
 
 <body>
-
-  
-
   <div id="shell">
     <aside class="sidebar">
       <div class="sidebar-header">
@@ -420,7 +408,8 @@ if (isset($_GET['delete_theme_id'])) {
                   $result = $db->query($showusers_sql);
                   if($result->num_rows > 0){
                       foreach($result as $row){
-                          echo "<tr><td>".$row['Id_u']."</td><td>".$row['username']."</td><td>".$row['email']."</td><td>".$row['role_name']."</td><td><a href='index.php?delete_id=".$row['Id_u']."' class='important'>delete</a> </td></tr>";
+                          echo "<tr><td>".$row['Id_u']."</td><td>".$row['username']."</td><td>".$row['email']."</td><td>".$row['role_name']."</td><td>
+                          <a href='index.php?delete_id=".$row['Id_u']."' class='important'>  <i class='fa-solid fa-trash-can'></i></a> </td></tr>";
                       }
                   }
                 ?>
@@ -428,12 +417,12 @@ if (isset($_GET['delete_theme_id'])) {
             </table>
           </div>
           <section class="user-section add-users-section">
-              <h2>Add New User <span class="users-hint">fields marked with * are required</span></h2>
+              <h2>Add New User</h2>
               <form action="" method="post" class="add-users-form">
-                <label for="add-username"><span class="important">*</span>Username:</label><input type="text" name="add-username" placeholder="superGamerz12" id="add-username" required>
-                <label for="add-password"><span class="important">*</span>Password:</label><input type="password" name="add-password" placeholder="Str0ngP4ssw0rd" id="add-password" required>
-                <label for="add-email"><span class="important">*</span>Email:</label><input type="email" name="add-email" placeholder="johndoe@gmail.com" id="add-email" required>
-                <label for="add-role"><span class="important">*</span>Role</label>
+                <label for="add-username">Username:</label><input type="text" name="add-username" placeholder="superGamerz12" id="add-username" required>
+                <label for="add-password">Password:</label><input type="password" name="add-password" placeholder="Str0ngP4ssw0rd" id="add-password" required>
+                <label for="add-email">Email:</label><input type="email" name="add-email" placeholder="johndoe@gmail.com" id="add-email" required>
+                <label for="add-role">Role</label>
                 <select name="add-role" id="add-role">
                     <?php 
                         $roles_sql = "SELECT Id_r, name FROM `roles`";
@@ -449,9 +438,9 @@ if (isset($_GET['delete_theme_id'])) {
               </form>
           </section>
           <section class="user-section update-users-section">
-              <h2>Update user <span class="users-hint">fields marked with * are required</span></h2>
+              <h2>Update user</h2>
               <form action="" method="post" class="update-users-form">
-                <label for="update-id"><span class="important">*</span>user Id:</label><input type="number" name="update-id" placeholder="31" id="update-id" required>
+                <label for="update-id">user Id:</label><input type="number" name="update-id" placeholder="31" id="update-id" required>
                 <label for="update-username">Username:</label><input type="text" name="update-username" placeholder="superGamerz12" id="update-username">
                 <label for="update-password">Password:</label><input type="password" name="update-password" placeholder="Str0ngP4ssw0rd" id="update-password">
                 <label for="update-email">Email:</label><input type="email" name="update-email" placeholder="johndoe@gmail.com" id="update-email">
@@ -471,9 +460,9 @@ if (isset($_GET['delete_theme_id'])) {
               </form>
           </section>
            <section class="user-section delete-users-section">
-              <h2>Delete user <span class="users-hint">fields marked with * are required</span></h2>
+              <h2>Delete user</h2>
               <form action="" method="post" class="delete-users-form">
-                <label for="delete-id"><span class="important">*</span>user Id:</label><input type="number" name="delete-id" placeholder="31" id="delete-id" required>
+                <label for="delete-id">user Id:</label><input type="number" name="delete-id" placeholder="31" id="delete-id" required>
                 <input type="submit" name="delete-user" id="delete-user" value="Confirm">
               </form>
           </section>
@@ -551,7 +540,7 @@ if (isset($_GET['delete_theme_id'])) {
                                         <div class='color-preview' style='background-color: ".$array['explosionParticle']."'></div>
                                     </td>
                                     <td>".$array['tankSprites']."</td>
-                                    <td><a href='index.php?delete_theme_id=".$row['Id_t']."' class='important'>delete</a> </td>
+                                    <td><a href='index.php?delete_theme_id=".$row['Id_t']."' class='important'> <i class='fa-solid fa-trash-can'></i></a> </td>
                                 </tr>";
                         }
                     }
@@ -560,9 +549,9 @@ if (isset($_GET['delete_theme_id'])) {
             </table>
             </div>
           <section class="theme-section add-theme-section">
-              <h2>Add New Theme <span class="users-hint">fields marked with * are required</span></h2>
+              <h2>Add New Theme</h2>
               <form action="" method="post" class="add-theme-form">
-                <label for="add-theme-name"><span class="important">*</span>Theme Name:</label>
+                <label for="add-theme-name">Theme Name:</label>
                 <input type="text" name="add-theme-name" placeholder="Dark Mode" id="add-theme-name" required>
                 
                 <div class="colors-grid">
@@ -599,7 +588,7 @@ if (isset($_GET['delete_theme_id'])) {
                   </div>
                 </div>
 
-                <label for="add-spritesheet"><span class="important">*</span>Spritesheet:</label>
+                <label for="add-spritesheet">Spritesheet:</label>
                 <select name="add-spritesheet" id="add-spritesheet" required>
                   <?php  
                    foreach(SPRITESSHETS as $sheet){
@@ -612,9 +601,9 @@ if (isset($_GET['delete_theme_id'])) {
           </section>
 
           <section class="theme-section update-theme-section">
-              <h2>Update Theme <span class="users-hint">fields marked with * are required</span></h2>
+              <h2>Update Theme</h2>
               <form action="" method="post" class="update-theme-form">
-                <label for="update-theme-id"><span class="important">*</span>Theme Id:</label>
+                <label for="update-theme-id">Theme Id:</label>
                 <input type="number" name="update-theme-id" placeholder="1" id="update-theme-id" required>
                 
                 <label for="update-theme-name">Theme Name:</label>
@@ -667,9 +656,9 @@ if (isset($_GET['delete_theme_id'])) {
           </section>
 
           <section class="theme-section delete-theme-section">
-              <h2>Delete Theme <span class="users-hint">fields marked with * are required</span></h2>
+              <h2>Delete Theme</h2>
               <form action="" method="post" class="delete-theme-form">
-                <label for="delete-theme-id"><span class="important">*</span>Theme Id:</label>
+                <label for="delete-theme-id">Theme Id:</label>
                 <input type="number" name="delete-theme-id" placeholder="1" id="delete-theme-id" required>
                 <input type="submit" name="delete-theme" id="delete-theme" value="Confirm">
               </form>
@@ -704,7 +693,7 @@ if (isset($_GET['delete_theme_id'])) {
                   <div class="setting-input-row">
                     <label for="api-key">Free Claude Code API Key</label>
                     <div class="input-with-action">
-                      <input type="password" name="api_key" id="api-key" value="youwish" readonly>
+                      <input type="password" name="api_key" id="api-key" value="you wish                       " readonly>
                       <button type="button" class="action-link" id="api-btn">Show</button>
                     </div>
                   </div>

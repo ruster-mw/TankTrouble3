@@ -6,7 +6,10 @@
     if (!isset($_SESSION['logged_in'])){
         if (isset($_COOKIE['login_token'])) {
             $token = $_COOKIE['login_token'];
-            $sql = "SELECT Id_u, username, role_id FROM `users` WHERE login_token = ?";
+            $sql  = "SELECT users.Id_u, users.username, roles.name AS role_name  
+                 FROM `users` 
+                 JOIN `roles` ON roles.Id_r = users.role_id 
+                 WHERE login_token = ?";
             $stmt = $db->prepare($sql);
             $stmt->bind_param("s", $token);
             $stmt->execute();
@@ -16,14 +19,10 @@
                 $_SESSION['username']  = $username;
                 $_SESSION['user_id']   = $user_id;
                 $_SESSION['role_name']   = $role_name;
-            } else {
-                // echo "nie zalogowano";
-            }
+            } 
             $stmt->close();
         }
-    } else {
-        // echo "zalogowany";
-    }
+    } 
 ?>
 
 <!DOCTYPE html>
@@ -32,7 +31,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="An exicting spin on the popular browser game Tank Trouble 2">
-    <title>Panzer &Auml;rger</title>
+    <title>Tank Trouble 3</title>
     <link rel="shortcut icon" type="image/x-icon" href="/PanzerArger/assets/tank.ico">
     <link rel="stylesheet" href="style.css" type="text/css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,9 +43,9 @@
     <div class="game-section hidden">
         <div class="UI">
             <div class="scoreboard"></div>
-             <button class="back-button">
+             <a href="" class="back-button">
                    <p>Menu</p>
-            </button>
+            </a>
             <button class="pause-button">
                     <p>Pause</p>
             </button>
@@ -73,7 +72,7 @@
         <aside>
             <section class="bar">
                 <header>
-                    TankS Trouble
+                    Tanks Trouble
                     <!-- <img src="/PanzerArger/assets/tanklogo.png" alt="logo gry" class="logo" style="font-size:20px"> -->
                 </header>
                 <button class="bar-button" data-type="play">
@@ -100,7 +99,40 @@
             </section>
         </aside>
         <main>
-           <section class="menu" id="play-menu" data-type="play">
+           <section class="menu active" id="play-menu" data-type="play">
+                <?php 
+                    if (isset($_SESSION['flash-logged-in'])){
+                        $code = $_SESSION['flash-logged-in'];
+                        if($code === 'success'){
+                            echo "<div class='logged-in-popup'>
+                                    <p>Logged in</p>
+                                </div>";
+                        } else if ($code === 'error'){
+                            echo "<div class='logged-in-popup'>
+                                    <p>username or password incorrect</p>
+                                </div>";
+                        }
+                        unset($_SESSION['flash-logged-in']);
+                    }
+                    if (isset($_SESSION['flash-signed-up'])){
+                        $code = $_SESSION['flash-signed-up'];
+                        if ($code === 'success'){
+                            echo "<div class='logged-in-popup'>
+                                    <p>account created</p>
+                                </div>";
+                        } else if ($code === 'error'){
+                            echo "<div class='logged-in-popup'>
+                                    <p>something went wrong</p>
+                                </div>";
+                        } else if ($code === 'error-username'){
+                             echo "<div class='logged-in-popup'>
+                                    <p>username taken</p>
+                                </div>";
+                        }
+                        unset($_SESSION['flash-signed-up']);
+                    }
+                ?>
+                
                 <div class="play-header">
                     <h2>Select Game Mode</h2>
                 </div>
@@ -113,7 +145,7 @@
                     </div>
                     <div class="play-config-div" id="play-gamemode-config">
                         <button class="play-config play-config-selected" data-gamemode="classic">classic</button>
-                        <button class="play-config" data-gamemode="chaos" disabled style="cursor: not-allowed;opacity: 0.5;">chaos</button>
+                        <button class="play-config" data-gamemode="random">chaos</button>
                         <button class="play-config" data-gamemode="kachow">kachow</button>
                         <button class="play-config" data-gamemode="power">power frenzy</button>
                     </div>
@@ -139,7 +171,7 @@
                     }
                 ?> 
            </section>
-           <section class="menu active" id="cosmetics-menu" data-type="cosmetics">
+           <section class="menu" id="cosmetics-menu" data-type="cosmetics">
                 <div class="theme-wrapper">
                 </div>
                 <button class="theme-select-button">apply</button>

@@ -174,7 +174,7 @@ const CFG = {
     },
     // power up
     pwrupSize: 40,
-    pwrupCooldown: 12,
+    pwrupCooldown: 16,
 }
 
 
@@ -489,14 +489,13 @@ function loadTheme(theme){
 }
 async function getThemes() {
   try {
-    const response = await fetch(`api/themes`)
+    const response = await fetch(`./api/themes`)
     if (!response.ok) 
         if (response.status === 404)
             // window.location.href = '404.php'
             console.error('someting went wrong')
         else
             throw new Error(`HTTP error: ${response.status}`)
-
     const data = await response.json()
     return data;
    } catch (err) {
@@ -720,16 +719,19 @@ class Game {
         this.offScreenCanvas.width = this.width;
         this.offScreenCanvas.height = this.height;
         this.offCtx = this.offScreenCanvas.getContext('2d');
-        this.redraw = true
+        this.redraw = true;
 
         this.GCFG = {};
         Object.assign(this.GCFG, CFG)
         if (this.gameMode == "kachow"){
-            this.GCFG.tankMaxVelocity *= 2;
-            this.GCFG.tankAcceleration *= 2;
-            this.GCFG.tankRotationSpeed *= 1.5;
+            this.GCFG.tankMaxVelocity *= 2
+            this.GCFG.tankAcceleration *= 2
+            this.GCFG.tankRotationSpeed *= 1.5
+            this.GCFG.friction = 0;
         } else if (this.gameMode == "power"){
-            this.GCFG.pwrupCooldown *=  0.3;
+            this.GCFG.pwrupCooldown *=  0.3
+        } else if (this.gameMode == "random"){
+            this.applyRandomness()
         }
         this.gameRunning = true;
         this.roundOver = false;
@@ -771,6 +773,25 @@ class Game {
         this.gameLoop();
         this.canvas.focus();
         // this.gamesection.addEventListener('click', () => {this.generateMaze();this.newRound()})
+    }
+    applyRandomness() {
+        this.GCFG = structuredClone(CFG); 
+        this.GCFG.tankMaxVelocity *= (Math.random() * 2.5 + 0.1);
+        this.GCFG.tankAcceleration *= (Math.random() * 2 + 0.1);
+        this.GCFG.tankRotationSpeed *= (Math.random() * 3 + 0.1);
+        this.GCFG.tankFriction *= (Math.random() * 2.0 + 0.1);
+        this.GCFG.tankMaxCoolDown *= (Math.random() * 1.0 + 0.2); 
+        this.GCFG.tankReloadTime *= (Math.random() * 3.0 + 0.1);
+        this.GCFG.pwrupCooldown *= (Math.random());
+        Object.values(this.GCFG.projectiles).forEach(proj => {
+            if (proj.speed !== 0) proj.speed *= (Math.random() * 3.5 + 0.1); 
+            proj.radius *= (Math.random() * 3.5 + 0.1); 
+        });
+        this.shakeMaxTime = this.GCFG.shakemaxTime;
+        this.maxShakeStrength = this.GCFG.maxShakeStrength * (Math.random() * 10.0 + 0.5);
+        this.radianRatio = this.GCFG.radianRatio;
+        this.powerUpMaxCoolDown = this.GCFG.pwrupCooldown;
+        this.wallThickness = this.GCFG.wallThickness;
     }
     generateScoreboard(){
         for(let i = 0; i < this.playerAmount; i++){
@@ -1033,7 +1054,7 @@ class Game {
 
         if (velocity < 0){
             if (this.gameMode == "kachow") {
-                player.velocity = -player.velocity * 0.8
+                player.velocity = -player.velocity * 1.2
             } else {
                 player.velocity = 0
             }
@@ -1414,7 +1435,7 @@ class Game {
                 this.newRound()
             }, this.GCFG.newRoundTime)
         }
-    }
+        }
         if (this.gameRunning){
             window.requestAnimationFrame((ts) => this.gameLoop(ts)); // ts pmo fr vro
         }
@@ -1440,6 +1461,9 @@ class Game {
         this.players = []
         this.controller = []
         this.powerUps = []
+        if (this.gameMode == "random"){
+            this.applyRandomness()
+        }
         this.generateMaze()
         this.spawnPlayers()
         this.setupController()

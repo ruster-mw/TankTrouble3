@@ -1,6 +1,6 @@
   :root {
-    --bg:           #0b0d0f;
-    --surface:      #13161b;
+    --bg:           #08080b;
+    --surface:      #090a0c;
     --border:       #262c36;
     --accent:       #d1d5db;
     --accent-dim:   #738183;
@@ -340,9 +340,25 @@ body {
     color: var(--accent-dim);
     font-family: var(--fontSans);
     text-transform: none;
+
 }
 .important{
     color: var(--danger);
+    position: relative;
+}
+.important::before{
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 100%;
+    height: 100%;
+    padding: 6px;
+    border-radius: 10px;
+    /* box-sizing: border-box; */
+    border: 1px solid rgb(255, 92, 119);
+    background-color: rgba(255, 0, 0, 0.1);
 }
 .user-section input[type="submit"]:hover{
     transition: all 0.2s;
@@ -406,7 +422,8 @@ body {
     border: 2px solid var(--text-muted);
 }
 .add-users-section input[type="submit"]{
-    padding: 6px;
+
+border-radius: 8px;    padding: 6px;
     width: 130px;
     font-size: clamp(1.2rem, 1.2vw, 3.2rem);
     background-color: #20ec20;
@@ -462,7 +479,8 @@ body {
     border: 2px solid var(--text-muted);
 }
 .update-users-section input[type="submit"]{
-    padding: 6px;
+
+border-radius: 8px;    padding: 6px;
     width: 130px;
     font-size: clamp(1.2rem, 1.2vw, 3.2rem);
     background-color: #2023ec;
@@ -519,7 +537,8 @@ body {
     border: 2px solid var(--text-muted);
 }
 .delete-users-section input[type="submit"]{
-    padding: 6px;
+
+border-radius: 8px;    padding: 6px;
     width: 130px;
     font-size: clamp(1.2rem, 1.2vw, 3.2rem);
     background-color: #ec2020;
@@ -751,6 +770,7 @@ body {
 }
 
 .add-theme-section input[type="submit"] {
+    border-radius: 8px;
     padding: 6px;
     width: 130px;
     font-size: clamp(1.2rem, 1.2vw, 3.2rem);
@@ -822,6 +842,7 @@ body {
 }
 
 .update-theme-section input[type="submit"] {
+    border-radius: 8px;
     padding: 6px;
     width: 130px;
     font-size: clamp(1.2rem, 1.2vw, 3.2rem);
@@ -891,8 +912,13 @@ body {
 .delete-theme-section input[type="number"]:hover {
     border: 2px solid var(--text-muted);
 }
-
+thead{
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 .delete-theme-section input[type="submit"] {
+    border-radius: 8px;
     padding: 6px;
     width: 130px;
     font-size: clamp(1.2rem, 1.2vw, 3.2rem);

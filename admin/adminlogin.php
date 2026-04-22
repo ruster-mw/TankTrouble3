@@ -5,10 +5,6 @@ $db = require "../database.php";
 if ($db->connect_error){
     die('blad polaczania z baza: '.$db->connect_error);
 }
-// if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true){
-//     header("Location: index.php");
-//     exit;
-// }
 if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])){
     $username = !empty($_POST['admin_username']) ? trim($_POST['admin_username']) : false;
     $password = !empty($_POST['admin_password']) ? trim($_POST['admin_password']) : false;

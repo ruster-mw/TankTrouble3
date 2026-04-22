@@ -20,18 +20,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $check->close();
 
         if ($taken) {
-            header("Location: index.php?error=taken");
+            $_SESSION['flash-signed-up'] = 'error-username';
+            header("Location: index.php");
             exit;
         }
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         require_once './admin/user.php';
         $user_object = new User($db);
         $user_object->insert($username, $password, $email, 2);
-        header("Location: index.php?success=registered");
+        $_SESSION['flash-signed-up'] = 'success';
+        header("Location: index.php");
         exit;
     }
-
-    header("Location: index.php?error=invalid");
+    $_SESSION['flash-signed-up'] = 'error';
+    header("Location: index.php");
     exit;
 }
 ?>

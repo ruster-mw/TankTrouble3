@@ -28,13 +28,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION['username']  = $username;
             $_SESSION['user_id']   = $user_id;
             $_SESSION['role_name'] = $role_name;
+            $_SESSION['flash-logged-in'] = 'success';
             setcookie('login_token', $login_token, time() + 86400 * 30, '/');
             header("Location: index.php");
             exit;
         }
     }
-
-    header("Location: index.php?error=login");
+    $_SESSION['flash-logged-in'] = 'error';
+    header("Location: index.php");
     exit;
 }
 ?>

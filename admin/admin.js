@@ -184,14 +184,51 @@ keyBtn.addEventListener('click', () => {
 })
 
 if (localStorage.getItem('mode')){
-    toggleMode(localStorage.getItem('mode'))
+    // toggleMode(localStorage.getItem('mode'))
     if (localStorage.getItem('mode') === 'light'){
         lightToggle.checked = true
     }
 }
 
+document.getElementById('update-theme-id').addEventListener('blur', async function () {
+    const id = parseInt(this.value);
 
+    if (!id || id < 1) return;
 
+    try {
+        const res = await fetch('../api/themes');
+        const themes = await res.json();
+        const theme = themes[id - 1];
+
+        if (!theme) return;
+
+        document.getElementById('update-theme-name').value      = theme.title;
+        document.getElementById('update-color1').value          = theme.colors[0];
+        document.getElementById('update-color2').value          = theme.colors[1];
+        document.getElementById('update-color3').value          = theme.colors[2];
+        document.getElementById('update-color4').value          = theme.colors[3];
+        document.getElementById('update-color5').value          = theme.colors[4];
+        document.getElementById('update-power-color').value     = theme.powerColor;
+        document.getElementById('update-explosion-color').value = theme.explosionParticle;
+        document.getElementById('update-spritesheet').value     = theme.tankSprites;
+            colorInputs.forEach(input => {
+    const color = input.value
+    if(regex.test(color)){
+        input.style.background = color
+    }
+    input.addEventListener('input' , () =>  {
+                    const color = input.value
+    if(regex.test(color)){
+        input.style.background = color
+    } else {
+        input.style.background = "var(--bg)"
+    }
+    })
+})
+    } catch (e) {
+        // do nothing
+    }
+});
 
 
 

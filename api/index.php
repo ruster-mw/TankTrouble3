@@ -28,28 +28,6 @@ switch ($resource) {
                 ");
                 respond(200, $result ? $result->fetch_all(MYSQLI_ASSOC) : []);
                 break;
-            // case 'POST':
-            //     if(empty($body['username']) || empty($body['password']) || empty($body['email']) || empty($body['role_id'])) {
-            //         respond(400, ['error' => 'all fields must be filled']);
-            //     }
-            //     $user->insert($body['username'], $body['password'], $body['email'], $body['role_id']);
-            //     respond(201, ['message' => 'user created']);
-            //     break;
-            // case 'PUT':
-            //     if(!$id) 
-            //         respond(400, ['error' => 'id required']);
-            //     if(empty($body['username']) || empty($body['email']) || empty($body['role_id'] || empty($body['password']))) {
-            //         respond(400, ['error' => 'all fields must be filled']);
-            //     }
-            //     $user->update($body['username'], $body['email'], $body['role_id'], $id, $body['password'] ?? null);
-            //     respond(200, ['message' => 'user updated']);
-            //     break;
-            // case 'DELETE':
-            //     if(!$id) 
-            //         respond(400, ['error' => 'id required']);
-            //     $user->delete($id);
-            //     respond(200, ['message' => 'User deleted']);
-            //     break;
             default:
                 respond(405, ['error' => 'method forbidden']);
         }
@@ -61,14 +39,14 @@ switch ($resource) {
             if (json_last_error() === JSON_ERROR_NONE) 
                 $data[] = $config;
         }
-        respond(200, [$data, 'debug_uri' => $uri]);
+        respond(200, $data);
         break;
     case 'update_stats':
         if ($method !== 'POST') {
             respond(405, ['error' => 'method forbidden']);
         } else {
         if (empty($_SESSION['user_id'])) {
-            respond(400, ['error' => 'user not logged in']);
+            respond(403, ['error' => 'user not logged in']);
         } 
         else if (empty($content['playtime']) || empty($content['games'])) {
             respond(400, ['error' => 'playtime and games fields are required']);
